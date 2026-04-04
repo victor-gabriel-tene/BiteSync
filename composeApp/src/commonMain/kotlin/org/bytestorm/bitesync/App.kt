@@ -1,10 +1,5 @@
 package org.bytestorm.bitesync
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -12,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.bytestorm.bitesync.location.LocationTracker
 import org.bytestorm.bitesync.network.ServerDiscovery
@@ -41,7 +35,6 @@ fun App(
         val error by viewModel.error.collectAsState()
         val isConnecting by viewModel.isConnecting.collectAsState()
 
-        Box(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
         when (val currentScreen = screen) {
             is AppScreen.Lobby -> {
                 LobbyScreen(
@@ -90,10 +83,10 @@ fun App(
             is AppScreen.Match -> {
                 MatchScreen(
                     venue = currentScreen.venue,
+                    random = currentScreen.random,
                     onBackToLobby = { viewModel.returnToLobby() }
                 )
             }
-        }
         }
     }
 }

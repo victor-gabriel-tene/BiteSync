@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,6 +44,7 @@ import org.bytestorm.bitesync.ui.components.ConfettiEffect
 @Composable
 fun MatchScreen(
     venue: Venue,
+    random: Boolean = false,
     onBackToLobby: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -63,7 +67,7 @@ fun MatchScreen(
         ConfettiEffect(modifier = Modifier.fillMaxSize())
 
         Column(
-            modifier = Modifier.fillMaxSize().padding(32.dp),
+            modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars).padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -79,7 +83,7 @@ fun MatchScreen(
                 modifier = Modifier.scale(scale)
             )
             Text(
-                "Everyone agreed on",
+                if (random) "Randomly chosen:" else "Everyone agreed on",
                 fontSize = 16.sp,
                 color = Color.White.copy(alpha = 0.9f)
             )
@@ -129,7 +133,7 @@ fun MatchScreen(
 
                     if (venue.categories.isNotEmpty()) {
                         Text(
-                            venue.categories.joinToString(" \u00B7 "),
+                            venue.categories.joinToString(" \u00B7 ") { it.replace("_", " ") },
                             color = Color.Gray,
                             fontSize = 14.sp
                         )

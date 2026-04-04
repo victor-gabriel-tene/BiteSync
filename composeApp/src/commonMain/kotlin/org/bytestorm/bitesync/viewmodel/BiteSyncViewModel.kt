@@ -24,7 +24,7 @@ sealed interface AppScreen {
     data object Suggesting : AppScreen
     data object Swiping : AppScreen
     data class SuddenDeath(val venues: List<Venue>, val round: Int) : AppScreen
-    data class Match(val venue: Venue) : AppScreen
+    data class Match(val venue: Venue, val random: Boolean = false) : AppScreen
 }
 
 class BiteSyncViewModel(
@@ -279,7 +279,7 @@ class BiteSyncViewModel(
             }
 
             is ServerMessage.MatchFound -> {
-                _screen.value = AppScreen.Match(message.venue)
+                _screen.value = AppScreen.Match(message.venue, message.random)
             }
 
             is ServerMessage.Error -> {

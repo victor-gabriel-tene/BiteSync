@@ -58,7 +58,7 @@ sealed interface ServerMessage {
 
     @Serializable
     @SerialName("match_found")
-    data class MatchFound(val venue: Venue) : ServerMessage
+    data class MatchFound(val venue: Venue, val random: Boolean = false) : ServerMessage
 
     @Serializable
     @SerialName("sudden_death")

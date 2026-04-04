@@ -65,7 +65,7 @@ class RoomManager(private val json: Json) {
      * Returns null if no venues were liked at all (edge case).
      */
     sealed class SwipeResult {
-        data class Winner(val venue: Venue) : SwipeResult()
+        data class Winner(val venue: Venue, val random: Boolean = false) : SwipeResult()
         data class Tied(val venues: List<Venue>) : SwipeResult()
         data object NoLikes : SwipeResult()
     }
@@ -113,8 +113,7 @@ class RoomManager(private val json: Json) {
         val currentVenues = room.suddenDeathVenues
 
         if (room.suddenDeathVotes.isEmpty()) {
-            // Nobody liked anything - pick random from current candidates
-            return SwipeResult.Winner(currentVenues.random())
+            return SwipeResult.Winner(currentVenues.random(), random = true)
         }
 
         val maxLikes = room.suddenDeathVotes.values.maxOf { it.size }
@@ -124,8 +123,7 @@ class RoomManager(private val json: Json) {
         return when {
             topVenues.size == 1 -> SwipeResult.Winner(topVenues.first())
             topVenues.size >= room.getPreviousSuddenDeathTopCount() -> {
-                // No progress - pick random
-                SwipeResult.Winner(topVenues.random())
+                SwipeResult.Winner(topVenues.random(), random = true)
             }
             else -> SwipeResult.Tied(topVenues)
         }

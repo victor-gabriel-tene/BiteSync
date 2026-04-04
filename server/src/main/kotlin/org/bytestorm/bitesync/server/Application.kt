@@ -250,7 +250,7 @@ fun Application.configureServer() {
                                     when (val result = roomManager.resolveSuddenDeath(pin)) {
                                         is RoomManager.SwipeResult.Winner -> {
                                             roomManager.updateStatus(pin, RoomStatus.MATCH_FOUND)
-                                            roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(result.venue))
+                                            roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(result.venue, random = result.random))
                                         }
                                         is RoomManager.SwipeResult.Tied -> {
                                             room.resetForSuddenDeathRound(result.venues)
@@ -262,7 +262,7 @@ fun Application.configureServer() {
                                         is RoomManager.SwipeResult.NoLikes -> {
                                             val randomWinner = room.suddenDeathVenues.random()
                                             roomManager.updateStatus(pin, RoomStatus.MATCH_FOUND)
-                                            roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(randomWinner))
+                                            roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(randomWinner, random = true))
                                         }
                                     }
                                 }
@@ -272,7 +272,7 @@ fun Application.configureServer() {
                                     when (val result = roomManager.calculateTopVenues(pin)) {
                                         is RoomManager.SwipeResult.Winner -> {
                                             roomManager.updateStatus(pin, RoomStatus.MATCH_FOUND)
-                                            roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(result.venue))
+                                            roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(result.venue, random = result.random))
                                         }
                                         is RoomManager.SwipeResult.Tied -> {
                                             roomManager.updateStatus(pin, RoomStatus.SUDDEN_DEATH)
@@ -285,7 +285,7 @@ fun Application.configureServer() {
                                         is RoomManager.SwipeResult.NoLikes -> {
                                             val randomWinner = room.submittedVenues.random()
                                             roomManager.updateStatus(pin, RoomStatus.MATCH_FOUND)
-                                            roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(randomWinner))
+                                            roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(randomWinner, random = true))
                                         }
                                     }
                                 }
