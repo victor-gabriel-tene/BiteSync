@@ -41,3 +41,9 @@ data class RoomState(
     val status: RoomStatus = RoomStatus.WAITING,
     val submittedVenues: List<Venue> = emptyList()
 )
+
+@Serializable
+data class Attendee(
+    val user: User,
+    val attending: Boolean
+)

@@ -3,6 +3,7 @@ package org.bytestorm.bitesync.server.room
 import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
 import kotlinx.serialization.json.Json
+import org.bytestorm.bitesync.model.Attendee
 import org.bytestorm.bitesync.model.RoomStatus
 import org.bytestorm.bitesync.model.ServerMessage
 import org.bytestorm.bitesync.model.User
@@ -134,6 +135,22 @@ class RoomManager(private val json: Json) {
                 SwipeResult.Winner(topVenues.random(), random = true)
             }
             else -> SwipeResult.Tied(topVenues)
+        }
+    }
+
+    fun setAttendance(pin: String, userId: String, attending: Boolean): Boolean {
+        val room = rooms[pin] ?: return false
+        room.attendanceVotes[userId] = attending
+        return room.attendanceVotes.size >= room.users.size
+    }
+
+    fun getAttendees(pin: String): List<Attendee> {
+        val room = rooms[pin] ?: return emptyList()
+        return room.users.values.map { userSession ->
+            Attendee(
+                user = userSession.user,
+                attending = room.attendanceVotes[userSession.user.id] ?: false
+            )
         }
     }
 

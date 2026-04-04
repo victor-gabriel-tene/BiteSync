@@ -262,12 +262,37 @@ fun Application.configureServer() {
                                     pin, uid, message.venueId, message.liked
                                 )
                                 if (matchedVenue != null) {
+                                    room.matchedVenue = matchedVenue
                                     roomManager.updateStatus(pin, RoomStatus.MATCH_FOUND)
                                     roomManager.broadcastToRoom(
                                         pin,
                                         ServerMessage.MatchFound(matchedVenue)
                                     )
                                 }
+                            }
+                        }
+
+                        is ClientMessage.SetAttendance -> {
+                            val pin = roomPin ?: continue
+                            val uid = userId ?: continue
+                            val allResponded = roomManager.setAttendance(pin, uid, message.attending)
+                            val room = roomManager.getRoom(pin) ?: continue
+
+                            if (allResponded) {
+                                val venue = room.matchedVenue ?: continue
+                                val attendees = roomManager.getAttendees(pin)
+                                roomManager.broadcastToRoom(
+                                    pin,
+                                    ServerMessage.FinalPlan(venue, attendees)
+                                )
+                            } else {
+                                roomManager.broadcastToRoom(
+                                    pin,
+                                    ServerMessage.AttendanceUpdate(
+                                        attendance = room.attendanceVotes.toMap(),
+                                        allResponded = false
+                                    )
+                                )
                             }
                         }
 
@@ -281,6 +306,7 @@ fun Application.configureServer() {
                                 if (allDone) {
                                     when (val result = roomManager.resolveSuddenDeath(pin)) {
                                         is RoomManager.SwipeResult.Winner -> {
+                                            room.matchedVenue = result.venue
                                             roomManager.updateStatus(pin, RoomStatus.MATCH_FOUND)
                                             roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(result.venue, random = result.random))
                                         }
@@ -293,6 +319,7 @@ fun Application.configureServer() {
                                         }
                                         is RoomManager.SwipeResult.NoLikes -> {
                                             val randomWinner = room.suddenDeathVenues.random()
+                                            room.matchedVenue = randomWinner
                                             roomManager.updateStatus(pin, RoomStatus.MATCH_FOUND)
                                             roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(randomWinner, random = true))
                                         }
@@ -303,6 +330,7 @@ fun Application.configureServer() {
                                 if (allDone) {
                                     when (val result = roomManager.calculateTopVenues(pin)) {
                                         is RoomManager.SwipeResult.Winner -> {
+                                            room.matchedVenue = result.venue
                                             roomManager.updateStatus(pin, RoomStatus.MATCH_FOUND)
                                             roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(result.venue, random = result.random))
                                         }
@@ -316,6 +344,7 @@ fun Application.configureServer() {
                                         }
                                         is RoomManager.SwipeResult.NoLikes -> {
                                             val randomWinner = room.submittedVenues.random()
+                                            room.matchedVenue = randomWinner
                                             roomManager.updateStatus(pin, RoomStatus.MATCH_FOUND)
                                             roomManager.broadcastToRoom(pin, ServerMessage.MatchFound(randomWinner, random = true))
                                         }

@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -48,11 +46,14 @@ import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
 fun MatchScreen(
     venue: Venue,
     random: Boolean = false,
+    myVote: Boolean?,
+    respondedCount: Int,
+    totalUsers: Int,
+    onSetAttendance: (Boolean) -> Unit,
     onBackToLobby: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val strings = LocalStrings.current
-    val uriHandler = LocalUriHandler.current
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -89,10 +90,10 @@ fun MatchScreen(
             Text(
                 if (random) strings.randomlyChosen else strings.everyoneAgreed,
                 fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f)
+                color = Color.White.copy(alpha = 0.9f)
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -106,7 +107,7 @@ fun MatchScreen(
                 ) {
                     Text(
                         venue.name,
-                        fontSize = 28.sp,
+                        fontSize = 26.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
@@ -154,44 +155,52 @@ fun MatchScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Button(
-                    onClick = {
-                        val query = (venue.name + " " + venue.address)
-                            .replace(" ", "+")
-                            .replace("&", "%26")
-                        uriHandler.openUri("https://www.google.com/maps/search/?api=1&query=$query")
-                    },
-                    modifier = Modifier.weight(1f).height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            // Attendance section
+            if (myVote == null) {
+                Text(
+                    strings.areYouComing,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        strings.openMaps,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
-                    )
+                    Button(
+                        onClick = { onSetAttendance(true) },
+                        modifier = Modifier.weight(1f).height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                    ) {
+                        Text(strings.imIn, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    }
+                    OutlinedButton(
+                        onClick = { onSetAttendance(false) },
+                        modifier = Modifier.weight(1f).height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color.White.copy(alpha = 0.6f))
+                    ) {
+                        Text(strings.notThisTime, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    }
                 }
-
-                OutlinedButton(
-                    onClick = onBackToLobby,
-                    modifier = Modifier.weight(1f).height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground),
-                    border = androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
-                ) {
-                    Text(
-                        strings.backToLobby,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp
-                    )
-                }
+            } else {
+                Text(
+                    if (myVote) "\u2705 ${strings.imIn}" else "\u274C ${strings.notThisTime}",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    strings.respondedCount(respondedCount, totalUsers),
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
             }
         }
     }

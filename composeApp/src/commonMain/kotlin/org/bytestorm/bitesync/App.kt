@@ -23,6 +23,7 @@ import org.bytestorm.bitesync.location.LocationTracker
 import org.bytestorm.bitesync.network.ServerDiscovery
 import org.bytestorm.bitesync.settings.SettingsRepository
 import org.bytestorm.bitesync.settings.ThemeMode
+import org.bytestorm.bitesync.ui.screen.FinalPlanScreen
 import org.bytestorm.bitesync.ui.screen.LobbyScreen
 import org.bytestorm.bitesync.ui.screen.MatchScreen
 import org.bytestorm.bitesync.ui.screen.SettingsScreen
@@ -76,6 +77,8 @@ fun App(
             val error by viewModel.error.collectAsState()
             val isConnecting by viewModel.isConnecting.collectAsState()
             val myUserId by viewModel.myUserId.collectAsState()
+            val myAttendanceVote by viewModel.myAttendanceVote.collectAsState()
+            val attendanceResponded by viewModel.attendanceResponded.collectAsState()
 
             AnimatedContent(
                 targetState = screen,
@@ -158,6 +161,18 @@ fun App(
                         MatchScreen(
                             venue = currentScreen.venue,
                             random = currentScreen.random,
+                            myVote = myAttendanceVote,
+                            respondedCount = attendanceResponded,
+                            totalUsers = roomState?.users?.size ?: 0,
+                            onSetAttendance = { viewModel.setAttendance(it) },
+                            onBackToLobby = { viewModel.returnToLobby() }
+                        )
+                    }
+
+                    is AppScreen.FinalPlan -> {
+                        FinalPlanScreen(
+                            venue = currentScreen.venue,
+                            attendees = currentScreen.attendees,
                             onBackToLobby = { viewModel.returnToLobby() }
                         )
                     }

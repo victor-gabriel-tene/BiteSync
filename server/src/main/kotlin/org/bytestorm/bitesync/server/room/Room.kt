@@ -21,6 +21,10 @@ class Room(val pin: String) {
     // Tracks which users have finished swiping all cards
     val finishedUsers = mutableSetOf<String>()
 
+    // Attendance tracking (after match is found)
+    val attendanceVotes = mutableMapOf<String, Boolean>()
+    var matchedVenue: Venue? = null
+
     // Sudden death state
     var suddenDeathRound: Int = 0
     val suddenDeathVenues = mutableListOf<Venue>()

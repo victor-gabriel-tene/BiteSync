@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.bytestorm.bitesync.location.LocationTracker
+import org.bytestorm.bitesync.model.Attendee
 import org.bytestorm.bitesync.model.ClientMessage
 import org.bytestorm.bitesync.model.PlacePrediction
 import org.bytestorm.bitesync.model.RoomState
@@ -26,6 +27,7 @@ sealed interface AppScreen {
     data object Swiping : AppScreen
     data class SuddenDeath(val venues: List<Venue>, val round: Int) : AppScreen
     data class Match(val venue: Venue, val random: Boolean = false) : AppScreen
+    data class FinalPlan(val venue: Venue, val attendees: List<Attendee>) : AppScreen
 
     fun order(): Int = when (this) {
         is Lobby -> 0
@@ -34,6 +36,7 @@ sealed interface AppScreen {
         is Swiping -> 3
         is SuddenDeath -> 4
         is Match -> 5
+        is FinalPlan -> 6
     }
 }
 
@@ -84,6 +87,13 @@ class BiteSyncViewModel(
     val suddenDeathRound: StateFlow<Int> = _suddenDeathRound.asStateFlow()
 
     private var _doneSent = false
+
+    // --- Attendance ---
+    private val _myAttendanceVote = MutableStateFlow<Boolean?>(null)
+    val myAttendanceVote: StateFlow<Boolean?> = _myAttendanceVote.asStateFlow()
+
+    private val _attendanceResponded = MutableStateFlow(0)
+    val attendanceResponded: StateFlow<Int> = _attendanceResponded.asStateFlow()
 
     // --- General ---
     private val _error = MutableStateFlow<String?>(null)
@@ -239,6 +249,11 @@ class BiteSyncViewModel(
 
     // ======== General ========
 
+    fun setAttendance(attending: Boolean) {
+        _myAttendanceVote.value = attending
+        sendMessage(ClientMessage.SetAttendance(attending))
+    }
+
     fun clearError() {
         _error.value = null
     }
@@ -262,6 +277,8 @@ class BiteSyncViewModel(
         _isConnecting.value = false
         _suddenDeathRound.value = 0
         _doneSent = false
+        _myAttendanceVote.value = null
+        _attendanceResponded.value = 0
     }
 
     // ======== Server message handler ========
@@ -317,6 +334,14 @@ class BiteSyncViewModel(
 
             is ServerMessage.MatchFound -> {
                 _screen.value = AppScreen.Match(message.venue, message.random)
+            }
+
+            is ServerMessage.AttendanceUpdate -> {
+                _attendanceResponded.value = message.attendance.size
+            }
+
+            is ServerMessage.FinalPlan -> {
+                _screen.value = AppScreen.FinalPlan(message.venue, message.attendees)
             }
 
             is ServerMessage.Error -> {
