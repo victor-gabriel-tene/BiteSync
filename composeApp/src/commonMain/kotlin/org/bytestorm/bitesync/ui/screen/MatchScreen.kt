@@ -30,13 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.content.Intent
-import android.net.Uri
 import org.bytestorm.bitesync.model.Venue
 import org.bytestorm.bitesync.ui.components.ConfettiEffect
 
@@ -46,7 +44,7 @@ fun MatchScreen(
     onBackToLobby: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -156,12 +154,10 @@ fun MatchScreen(
             ) {
                 Button(
                     onClick = {
-                        val query = Uri.encode(venue.name + " " + venue.address)
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("geo:0,0?q=$query")
-                        )
-                        context.startActivity(intent)
+                        val query = (venue.name + " " + venue.address)
+                            .replace(" ", "+")
+                            .replace("&", "%26")
+                        uriHandler.openUri("https://www.google.com/maps/search/?api=1&query=$query")
                     },
                     modifier = Modifier.weight(1f).height(52.dp),
                     shape = RoundedCornerShape(12.dp),
