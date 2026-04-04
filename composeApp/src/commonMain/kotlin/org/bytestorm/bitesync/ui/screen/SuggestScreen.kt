@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import org.bytestorm.bitesync.localization.LocalStrings
 import org.bytestorm.bitesync.model.PlacePrediction
 import org.bytestorm.bitesync.model.RoomState
 import org.bytestorm.bitesync.model.Venue
@@ -70,6 +71,7 @@ fun SuggestScreen(
     onClearError: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalStrings.current
     var searchQuery by remember { mutableStateOf("") }
     val gradient = BiteSyncTheme.gradients.main
 
@@ -82,14 +84,14 @@ fun SuggestScreen(
                     .padding(horizontal = 20.dp, vertical = 16.dp)
             ) {
                 Text(
-                    "Add Restaurants",
+                    strings.addRestaurants,
                     color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp
                 )
                 if (roomState != null) {
                     Text(
-                        "Room: ${roomState.pin} \u00B7 ${roomState.users.size} players",
+                        strings.roomInfo(roomState.pin, roomState.users.size),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                         fontSize = 13.sp
                     )
@@ -97,14 +99,13 @@ fun SuggestScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Search bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = {
                         searchQuery = it
                         onSearchQueryChanged(it)
                     },
-                    placeholder = { Text("Search for a restaurant...", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)) },
+                    placeholder = { Text(strings.searchPlaceholder, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -162,7 +163,6 @@ fun SuggestScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Error
             if (error != null) {
                 Text(
                     error,
@@ -172,7 +172,6 @@ fun SuggestScreen(
                 )
             }
 
-            // Submitted venues list
             val submittedVenues = roomState?.submittedVenues ?: emptyList()
 
             Row(
@@ -183,7 +182,7 @@ fun SuggestScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Added (${submittedVenues.size})",
+                    strings.addedCount(submittedVenues.size),
                     color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
@@ -194,7 +193,7 @@ fun SuggestScreen(
                         color = Color(0xFF4CAF50).copy(alpha = 0.2f)
                     ) {
                         Text(
-                            "Ready to swipe!",
+                            strings.readyToSwipe,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                             color = Color(0xFF4CAF50),
                             fontSize = 12.sp,
@@ -227,12 +226,12 @@ fun SuggestScreen(
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    "Search and add restaurants above",
+                                    strings.searchAndAdd,
                                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                                     fontSize = 14.sp
                                 )
                                 Text(
-                                    "Everyone can contribute!",
+                                    strings.everyoneCanContribute,
                                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                                     fontSize = 13.sp
                                 )
@@ -275,7 +274,7 @@ fun SuggestScreen(
                         val readyCount = roomState.users.count { it.isReady }
                         val totalCount = roomState.users.size
                         Text(
-                            "$readyCount/$totalCount ready",
+                            strings.readyStatus(readyCount, totalCount),
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                             fontSize = 12.sp
                         )
@@ -295,7 +294,7 @@ fun SuggestScreen(
                     )
                 ) {
                     Text(
-                        if (myIsReady) "Ready!" else "I'm Ready",
+                        if (myIsReady) strings.ready else strings.imReady,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
@@ -303,7 +302,7 @@ fun SuggestScreen(
 
                 if (submittedVenues.size < 2) {
                     Text(
-                        "Add at least 2 restaurants to be ready",
+                        strings.addAtLeast2,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                         fontSize = 12.sp,
                         modifier = Modifier.align(Alignment.CenterHorizontally)

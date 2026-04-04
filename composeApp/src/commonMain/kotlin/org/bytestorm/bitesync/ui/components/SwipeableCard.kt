@@ -42,6 +42,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import kotlinx.coroutines.launch
+import org.bytestorm.bitesync.localization.LocalStrings
 import org.bytestorm.bitesync.model.Venue
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -84,12 +85,13 @@ fun SwipeableCardStack(
         }
 
         if (currentIndex >= venues.size && venues.isNotEmpty()) {
+            val strings = LocalStrings.current
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("No more venues!", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-                Text("Waiting for a match...", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f))
+                Text(strings.noMoreVenues, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+                Text(strings.waitingForMatch, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f))
             }
         }
     }
@@ -308,6 +310,7 @@ private fun VenueInfoOverlay(venue: Venue) {
 
 @Composable
 private fun SwipeIndicators(swipeProgress: Float) {
+    val strings = LocalStrings.current
     Box(modifier = Modifier.fillMaxSize()) {
         if (swipeProgress > 0.1f) {
             Box(
@@ -321,7 +324,7 @@ private fun SwipeIndicators(swipeProgress: Float) {
                     color = Color(0xFF4CAF50).copy(alpha = 0.9f)
                 ) {
                     Text(
-                        "LIKE",
+                        strings.like,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         color = Color.White,
                         fontWeight = FontWeight.ExtraBold,
@@ -343,7 +346,7 @@ private fun SwipeIndicators(swipeProgress: Float) {
                     color = Color(0xFFF44336).copy(alpha = 0.9f)
                 ) {
                     Text(
-                        "NOPE",
+                        strings.nope,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         color = Color.White,
                         fontWeight = FontWeight.ExtraBold,

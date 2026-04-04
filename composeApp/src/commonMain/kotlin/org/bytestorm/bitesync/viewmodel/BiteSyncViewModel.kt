@@ -21,6 +21,7 @@ import org.bytestorm.bitesync.network.ServerDiscovery
 
 sealed interface AppScreen {
     data object Lobby : AppScreen
+    data object Settings : AppScreen
     data object Suggesting : AppScreen
     data object Swiping : AppScreen
     data class SuddenDeath(val venues: List<Venue>, val round: Int) : AppScreen
@@ -28,10 +29,11 @@ sealed interface AppScreen {
 
     fun order(): Int = when (this) {
         is Lobby -> 0
-        is Suggesting -> 1
-        is Swiping -> 2
-        is SuddenDeath -> 3
-        is Match -> 4
+        is Settings -> 1
+        is Suggesting -> 2
+        is Swiping -> 3
+        is SuddenDeath -> 4
+        is Match -> 5
     }
 }
 
@@ -235,6 +237,14 @@ class BiteSyncViewModel(
 
     fun clearError() {
         _error.value = null
+    }
+
+    fun openSettings() {
+        _screen.value = AppScreen.Settings
+    }
+
+    fun closeSettings() {
+        _screen.value = AppScreen.Lobby
     }
 
     fun returnToLobby() {

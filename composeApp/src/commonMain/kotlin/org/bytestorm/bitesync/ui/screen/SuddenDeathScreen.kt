@@ -21,10 +21,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -45,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import org.bytestorm.bitesync.localization.LocalStrings
 import org.bytestorm.bitesync.model.RoomState
 import org.bytestorm.bitesync.model.Venue
 import org.bytestorm.bitesync.ui.components.SwipeableCardStack
@@ -68,7 +67,6 @@ fun SuddenDeathScreen(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-        // Swipe phase behind the splash
         SuddenDeathSwipeContent(
             venues = venues,
             currentIndex = currentIndex,
@@ -77,7 +75,6 @@ fun SuddenDeathScreen(
             onSwipe = onSwipe
         )
 
-        // Dramatic splash overlay
         AnimatedVisibility(
             visible = showSplash,
             enter = fadeIn(tween(200)),
@@ -90,6 +87,7 @@ fun SuddenDeathScreen(
 
 @Composable
 private fun SuddenDeathSplash(round: Int, venueCount: Int) {
+    val strings = LocalStrings.current
     val infiniteTransition = rememberInfiniteTransition()
     val pulse by infiniteTransition.animateFloat(
         initialValue = 0.9f,
@@ -119,7 +117,7 @@ private fun SuddenDeathSplash(round: Int, venueCount: Int) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                "SUDDEN DEATH",
+                strings.suddenDeath,
                 fontSize = 46.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFFFF4444),
@@ -131,7 +129,7 @@ private fun SuddenDeathSplash(round: Int, venueCount: Int) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                "Round $round",
+                strings.roundNumber(round),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White.copy(alpha = 0.9f)
@@ -154,7 +152,7 @@ private fun SuddenDeathSplash(round: Int, venueCount: Int) {
                     color = Color.White.copy(alpha = 0.15f)
                 ) {
                     Text(
-                        "$venueCount restaurants remain...",
+                        strings.restaurantsRemain(venueCount),
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -174,11 +172,11 @@ private fun SuddenDeathSwipeContent(
     roomState: RoomState?,
     onSwipe: (venueId: String, liked: Boolean) -> Unit
 ) {
+    val strings = LocalStrings.current
     val gradient = BiteSyncTheme.gradients.suddenDeath
 
     Box(modifier = Modifier.fillMaxSize().background(gradient)) {
         Column(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
-            // Header
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -194,7 +192,7 @@ private fun SuddenDeathSwipeContent(
                             fontSize = 18.sp
                         )
                         Text(
-                            "SUDDEN DEATH",
+                            strings.suddenDeath,
                             color = Color.White,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 20.sp,
@@ -203,7 +201,7 @@ private fun SuddenDeathSwipeContent(
                     }
                     if (roomState != null) {
                         Text(
-                            "Round $round \u00B7 ${roomState.users.size} players",
+                            strings.roundPlayers(round, roomState.users.size),
                             color = Color.White.copy(alpha = 0.7f),
                             fontSize = 13.sp
                         )
@@ -222,7 +220,6 @@ private fun SuddenDeathSwipeContent(
                 }
             }
 
-            // Progress bar (red-themed)
             if (venues.isNotEmpty()) {
                 val progress = (currentIndex.toFloat() / venues.size).coerceIn(0f, 1f)
                 Box(

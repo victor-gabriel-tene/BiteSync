@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,17 +33,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.bytestorm.bitesync.localization.LocalStrings
 import org.bytestorm.bitesync.model.Venue
 import org.bytestorm.bitesync.ui.components.ConfettiEffect
 import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
-import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun MatchScreen(
@@ -50,6 +51,7 @@ fun MatchScreen(
     onBackToLobby: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalStrings.current
     val uriHandler = LocalUriHandler.current
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
@@ -76,14 +78,14 @@ fun MatchScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                "It's a Match!",
+                strings.itsAMatch,
                 fontSize = 42.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
                 modifier = Modifier.scale(scale)
             )
             Text(
-                if (random) "Randomly chosen:" else "Everyone agreed on",
+                if (random) strings.randomlyChosen else strings.everyoneAgreed,
                 fontSize = 16.sp,
                 color = Color.White.copy(alpha = 0.9f)
             )
@@ -168,7 +170,7 @@ fun MatchScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Text(
-                        "Open Maps",
+                        strings.openMaps,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp
@@ -180,10 +182,10 @@ fun MatchScreen(
                     modifier = Modifier.weight(1f).height(52.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                    border = androidx.compose.foundation.BorderStroke(1.5.dp, Color.White.copy(alpha = 0.6f))
+                    border = BorderStroke(1.5.dp, Color.White.copy(alpha = 0.6f))
                 ) {
                     Text(
-                        "Back to Lobby",
+                        strings.backToLobby,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 14.sp
                     )

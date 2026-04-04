@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import org.bytestorm.bitesync.location.AndroidLocationTracker
 import org.bytestorm.bitesync.network.AndroidServerDiscovery
+import org.bytestorm.bitesync.settings.AndroidSettingsRepository
 
 class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
@@ -22,7 +23,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        // Request location permissions when app starts
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissionLauncher.launch(arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -33,7 +33,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(
                 serverDiscovery = AndroidServerDiscovery(),
-                locationTracker = AndroidLocationTracker(this)
+                locationTracker = AndroidLocationTracker(this),
+                settingsRepository = AndroidSettingsRepository(this)
             )
         }
     }

@@ -27,7 +27,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,12 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.bytestorm.bitesync.localization.LocalStrings
 import org.bytestorm.bitesync.model.RoomState
 import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
 
@@ -55,8 +54,10 @@ fun LobbyScreen(
     onJoinRoom: (String, String) -> Unit,
     onStartSuggesting: () -> Unit,
     onClearError: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalStrings.current
     var userName by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
     var isJoining by remember { mutableStateOf(false) }
@@ -66,6 +67,21 @@ fun LobbyScreen(
         modifier = modifier.fillMaxSize().background(gradient),
         contentAlignment = Alignment.Center
     ) {
+        // Settings gear button – top end
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(16.dp)
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.2f))
+                .clickable(onClick = onOpenSettings),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("\u2699\uFE0F", fontSize = 20.sp)
+        }
+
         Column(
             modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -78,7 +94,7 @@ fun LobbyScreen(
                 color = Color.White
             )
             Text(
-                text = "Swipe together. Eat together.",
+                text = strings.tagline,
                 fontSize = 16.sp,
                 color = Color.White.copy(alpha = 0.8f)
             )
@@ -116,6 +132,7 @@ private fun SegmentedControl(
     isJoining: Boolean,
     onToggle: (Boolean) -> Unit
 ) {
+    val strings = LocalStrings.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,7 +158,7 @@ private fun SegmentedControl(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (joinMode) "Join Room" else "Create Room",
+                        text = if (joinMode) strings.joinRoom else strings.createRoom,
                         fontSize = 13.sp,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                         color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -165,6 +182,7 @@ private fun CreateOrJoinCard(
     onCreateRoom: () -> Unit,
     onJoinRoom: () -> Unit
 ) {
+    val strings = LocalStrings.current
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -184,7 +202,7 @@ private fun CreateOrJoinCard(
             OutlinedTextField(
                 value = userName,
                 onValueChange = onUserNameChange,
-                label = { Text("Your Name") },
+                label = { Text(strings.yourName) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
@@ -194,7 +212,7 @@ private fun CreateOrJoinCard(
                 OutlinedTextField(
                     value = pin,
                     onValueChange = onPinChange,
-                    label = { Text("Room PIN") },
+                    label = { Text(strings.roomPin) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
@@ -224,7 +242,7 @@ private fun CreateOrJoinCard(
                     )
                 } else {
                     Text(
-                        if (isJoining) "Join Room" else "Create Room",
+                        if (isJoining) strings.joinRoom else strings.createRoom,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
@@ -239,6 +257,7 @@ private fun WaitingRoomCard(
     roomState: RoomState,
     onStartSuggesting: () -> Unit
 ) {
+    val strings = LocalStrings.current
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -249,7 +268,7 @@ private fun WaitingRoomCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Room PIN", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+            Text(strings.roomPin, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
             Text(
                 roomState.pin,
                 fontSize = 48.sp,
@@ -261,7 +280,7 @@ private fun WaitingRoomCard(
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             Text(
-                "Players (${roomState.users.size})",
+                strings.playersCount(roomState.users.size),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -322,11 +341,11 @@ private fun WaitingRoomCard(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Pick Restaurants!", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(strings.pickRestaurants, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             } else {
                 Text(
-                    "Waiting for more players...",
+                    strings.waitingForPlayers,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     style = MaterialTheme.typography.bodyMedium

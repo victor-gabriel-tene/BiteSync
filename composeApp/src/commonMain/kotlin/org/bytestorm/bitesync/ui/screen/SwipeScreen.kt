@@ -11,11 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -33,10 +31,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.bytestorm.bitesync.localization.LocalStrings
 import org.bytestorm.bitesync.model.RoomState
-import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
 import org.bytestorm.bitesync.model.Venue
 import org.bytestorm.bitesync.ui.components.SwipeableCardStack
+import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
 
 @Composable
 fun SwipeScreen(
@@ -46,12 +45,12 @@ fun SwipeScreen(
     onSwipe: (venueId: String, liked: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalStrings.current
     val gradient = BiteSyncTheme.gradients.main
 
     var swipeProgress by remember { mutableFloatStateOf(0f) }
 
     Box(modifier = modifier.fillMaxSize().background(gradient)) {
-        // Red glow on left edge (nope)
         if (swipeProgress < -0.05f) {
             Box(
                 modifier = Modifier
@@ -68,7 +67,6 @@ fun SwipeScreen(
                     )
             )
         }
-        // Green glow on right edge (like)
         if (swipeProgress > 0.05f) {
             Box(
                 modifier = Modifier
@@ -87,17 +85,16 @@ fun SwipeScreen(
         }
 
         Column(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
-            // Header
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("Swiping", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(strings.swiping, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     if (roomState != null) {
                         Text(
-                            "Room: ${roomState.pin} \u00B7 ${roomState.users.size} users",
+                            strings.roomUsers(roomState.pin, roomState.users.size),
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                             fontSize = 13.sp
                         )
@@ -116,7 +113,6 @@ fun SwipeScreen(
                 }
             }
 
-            // Progress bar
             if (venues.isNotEmpty()) {
                 val progress = (currentIndex.toFloat() / venues.size).coerceIn(0f, 1f)
                 Box(
