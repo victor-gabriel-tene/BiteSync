@@ -17,7 +17,8 @@ data class Venue(
 @Serializable
 data class User(
     val id: String,
-    val displayName: String
+    val displayName: String,
+    val isReady: Boolean = false
 )
 
 @Serializable

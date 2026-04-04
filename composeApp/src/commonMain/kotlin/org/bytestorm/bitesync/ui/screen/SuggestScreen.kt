@@ -60,9 +60,11 @@ fun SuggestScreen(
     predictions: List<PlacePrediction>,
     isSearching: Boolean,
     error: String?,
+    myUserId: String?,
     onSearchQueryChanged: (String) -> Unit,
     onPredictionSelected: (PlacePrediction) -> Unit,
     onStartSwiping: () -> Unit,
+    onToggleReady: () -> Unit,
     onClearError: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -241,34 +243,71 @@ fun SuggestScreen(
                 }
             }
 
-            // Start Swiping button
-            if (submittedVenues.size >= 2) {
+            // Ready status and button
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (roomState != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        roomState.users.forEach { user ->
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(if (user.isReady) Color(0xFF4CAF50) else Color.White.copy(alpha = 0.2f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = user.displayName.take(1).uppercase(),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        val readyCount = roomState.users.count { it.isReady }
+                        val totalCount = roomState.users.size
+                        Text(
+                            "$readyCount/$totalCount ready",
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+
+                val myIsReady = roomState?.users?.find { it.id == myUserId }?.isReady ?: false
                 Button(
-                    onClick = onStartSwiping,
+                    onClick = onToggleReady,
+                    enabled = submittedVenues.size >= 2,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp)
                         .height(52.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B6B))
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (myIsReady) Color(0xFF4CAF50) else Color(0xFFFF6B6B)
+                    )
                 ) {
                     Text(
-                        "Start Swiping! (${submittedVenues.size} venues)",
+                        if (myIsReady) "Ready!" else "I'm Ready",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                 }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
+
+                if (submittedVenues.size < 2) {
                     Text(
-                        "Add at least 2 restaurants to start swiping",
+                        "Add at least 2 restaurants to be ready",
                         color = Color.White.copy(alpha = 0.4f),
-                        fontSize = 13.sp
+                        fontSize = 12.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 }
             }

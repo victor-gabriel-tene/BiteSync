@@ -34,6 +34,7 @@ fun App(
         val isSearching by viewModel.isSearching.collectAsState()
         val error by viewModel.error.collectAsState()
         val isConnecting by viewModel.isConnecting.collectAsState()
+        val myUserId by viewModel.myUserId.collectAsState()
 
         when (val currentScreen = screen) {
             is AppScreen.Lobby -> {
@@ -54,9 +55,11 @@ fun App(
                     predictions = predictions,
                     isSearching = isSearching,
                     error = error,
+                    myUserId = myUserId,
                     onSearchQueryChanged = { viewModel.onSearchQueryChanged(it) },
                     onPredictionSelected = { viewModel.onPredictionSelected(it) },
                     onStartSwiping = { viewModel.startSwiping() },
+                    onToggleReady = { viewModel.toggleReady() },
                     onClearError = { viewModel.clearError() }
                 )
             }

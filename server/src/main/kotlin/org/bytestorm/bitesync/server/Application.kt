@@ -145,7 +145,7 @@ fun Application.configureServer() {
                             send(Frame.Text(
                                 appJson.encodeToString(
                                     ServerMessage.serializer(),
-                                    ServerMessage.RoomCreated(room.toRoomState())
+                                    ServerMessage.RoomCreated(room.toRoomState(), user.id)
                                 )
                             ))
                         }
@@ -160,6 +160,12 @@ fun Application.configureServer() {
 
                             if (room != null) {
                                 roomPin = room.pin
+                                send(Frame.Text(
+                                    appJson.encodeToString(
+                                        ServerMessage.serializer(),
+                                        ServerMessage.RoomJoined(room.toRoomState(), user.id)
+                                    )
+                                ))
                                 roomManager.broadcastToRoom(
                                     room.pin,
                                     ServerMessage.RoomUpdate(room.toRoomState())
@@ -201,6 +207,30 @@ fun Application.configureServer() {
                                 pin,
                                 ServerMessage.RoomUpdate(room.toRoomState())
                             )
+                        }
+
+                        is ClientMessage.SetReady -> {
+                            val pin = roomPin ?: continue
+                            val uid = userId ?: continue
+                            val allReady = roomManager.setUserReady(pin, uid, message.ready)
+                            val room = roomManager.getRoom(pin) ?: continue
+
+                            roomManager.broadcastToRoom(
+                                pin,
+                                ServerMessage.RoomUpdate(room.toRoomState())
+                            )
+
+                            if (allReady && room.status == RoomStatus.SUGGESTING && room.submittedVenues.isNotEmpty()) {
+                                roomManager.updateStatus(pin, RoomStatus.SWIPING)
+                                roomManager.broadcastToRoom(
+                                    pin,
+                                    ServerMessage.VenuesLoaded(room.submittedVenues.toList())
+                                )
+                                roomManager.broadcastToRoom(
+                                    pin,
+                                    ServerMessage.RoomUpdate(room.toRoomState())
+                                )
+                            }
                         }
 
                         is ClientMessage.StartSwiping -> {

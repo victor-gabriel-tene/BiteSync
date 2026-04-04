@@ -33,6 +33,10 @@ sealed interface ClientMessage {
     data class Swipe(val venueId: String, val liked: Boolean) : ClientMessage
 
     @Serializable
+    @SerialName("set_ready")
+    data class SetReady(val ready: Boolean) : ClientMessage
+
+    @Serializable
     @SerialName("done_swiping")
     data class DoneSwiping(val unused: Int = 0) : ClientMessage
 }
@@ -41,7 +45,11 @@ sealed interface ClientMessage {
 sealed interface ServerMessage {
     @Serializable
     @SerialName("room_created")
-    data class RoomCreated(val roomState: RoomState) : ServerMessage
+    data class RoomCreated(val roomState: RoomState, val userId: String) : ServerMessage
+
+    @Serializable
+    @SerialName("room_joined")
+    data class RoomJoined(val roomState: RoomState, val userId: String) : ServerMessage
 
     @Serializable
     @SerialName("room_update")
