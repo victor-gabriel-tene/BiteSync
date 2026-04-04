@@ -79,10 +79,12 @@ fun MatchScreen(
 
             Text(
                 strings.itsAMatch,
-                fontSize = 42.sp,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.scale(scale)
+                color = Color.White,
+                modifier = Modifier.fillMaxWidth().scale(scale),
+                textAlign = TextAlign.Center,
+                maxLines = 2
             )
             Text(
                 if (random) strings.randomlyChosen else strings.everyoneAgreed,
