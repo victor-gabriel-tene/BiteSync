@@ -60,22 +60,25 @@ class VenueService {
 
     // ---------- Autocomplete ----------
 
-    suspend fun autocomplete(query: String, lat: Double?, lng: Double?): List<PlacePrediction> {
+    suspend fun autocomplete(query: String, lat: Double?, lng: Double?, language: String? = null): List<PlacePrediction> {
         if (query.isBlank()) return emptyList()
-        println("[VenueService] Autocomplete request: query='$query', lat=$lat, lng=$lng, usingGoogle=${googleApiKey.isNotEmpty()}")
+        println("[VenueService] Autocomplete request: query='$query', lat=$lat, lng=$lng, lang=$language, usingGoogle=${googleApiKey.isNotEmpty()}")
         return if (googleApiKey.isNotEmpty()) {
-            googleAutocomplete(query, lat, lng)
+            googleAutocomplete(query, lat, lng, language)
         } else {
             mockAutocomplete(query)
         }
     }
 
     private suspend fun googleAutocomplete(
-        query: String, lat: Double?, lng: Double?
+        query: String, lat: Double?, lng: Double?, language: String? = null
     ): List<PlacePrediction> {
         val requestBody = buildJsonObject {
             put("input", query)
             put("includedPrimaryTypes", buildJsonArray { add("restaurant") })
+            if (!language.isNullOrBlank()) {
+                put("languageCode", language)
+            }
             if (lat != null && lng != null) {
                 put("locationBias", buildJsonObject {
                     put("circle", buildJsonObject {
@@ -122,20 +125,23 @@ class VenueService {
 
     // ---------- Place Details ----------
 
-    suspend fun getPlaceDetails(placeId: String): Venue? {
+    suspend fun getPlaceDetails(placeId: String, language: String? = null): Venue? {
         return if (googleApiKey.isNotEmpty()) {
-            googlePlaceDetails(placeId)
+            googlePlaceDetails(placeId, language)
         } else {
             mockPlaceDetails(placeId)
         }
     }
 
-    private suspend fun googlePlaceDetails(placeId: String): Venue? {
+    private suspend fun googlePlaceDetails(placeId: String, language: String? = null): Venue? {
         val fields = "id,displayName,rating,priceLevel,types,formattedAddress,photos"
 
         val responseText = client.get("https://places.googleapis.com/v1/places/$placeId") {
             header("X-Goog-Api-Key", googleApiKey)
             header("X-Goog-FieldMask", fields)
+            if (!language.isNullOrBlank()) {
+                parameter("languageCode", language)
+            }
         }.bodyAsText()
 
         val result = Json.parseToJsonElement(responseText).jsonObject

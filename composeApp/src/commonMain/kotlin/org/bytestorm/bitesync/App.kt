@@ -65,6 +65,7 @@ fun App(
     CompositionLocalProvider(LocalStrings provides stringsFor(currentLanguage)) {
         BiteSyncTheme(darkTheme = isDarkTheme) {
             val viewModel = viewModel { BiteSyncViewModel(serverDiscovery, locationTracker) }
+            viewModel.setLanguageCode(currentLanguage.code)
 
             val screen by viewModel.screen.collectAsState()
             val roomState by viewModel.roomState.collectAsState()

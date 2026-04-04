@@ -94,6 +94,9 @@ class BiteSyncViewModel(
 
     private var searchJob: Job? = null
 
+    private val _languageCode = MutableStateFlow("en")
+    fun setLanguageCode(code: String) { _languageCode.value = code }
+
     // ======== Connection ========
 
     private fun connectAndExecute(action: suspend () -> Unit) {
@@ -179,7 +182,8 @@ class BiteSyncViewModel(
                 _predictions.value = currentClient.autocomplete(
                     query = query,
                     lat = location?.first,
-                    lng = location?.second
+                    lng = location?.second,
+                    language = _languageCode.value
                 )
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
@@ -197,7 +201,7 @@ class BiteSyncViewModel(
         _predictions.value = emptyList()
         viewModelScope.launch {
             try {
-                val venue = currentClient.getPlaceDetails(prediction.placeId)
+                val venue = currentClient.getPlaceDetails(prediction.placeId, _languageCode.value)
                 currentClient.send(ClientMessage.SubmitVenue(venue))
             } catch (e: Exception) {
                 _error.value = "Could not load place details: ${e.message}"

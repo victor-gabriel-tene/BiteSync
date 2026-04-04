@@ -101,8 +101,9 @@ fun Application.configureServer() {
             val query = call.request.queryParameters["query"] ?: ""
             val lat = call.request.queryParameters["lat"]?.toDoubleOrNull()
             val lng = call.request.queryParameters["lng"]?.toDoubleOrNull()
+            val language = call.request.queryParameters["language"]
 
-            val predictions = venueService.autocomplete(query, lat, lng)
+            val predictions = venueService.autocomplete(query, lat, lng, language)
             call.respond(predictions)
         }
 
@@ -112,8 +113,9 @@ fun Application.configureServer() {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to "placeId is required"))
                 return@get
             }
+            val language = call.request.queryParameters["language"]
 
-            val venue = venueService.getPlaceDetails(placeId)
+            val venue = venueService.getPlaceDetails(placeId, language)
             if (venue != null) {
                 call.respond(venue)
             } else {

@@ -41,18 +41,21 @@ class BiteSyncClient(private val baseUrl: String) {
 
     // --- REST: Autocomplete ---
 
-    suspend fun autocomplete(query: String, lat: Double? = null, lng: Double? = null): List<PlacePrediction> {
+    suspend fun autocomplete(query: String, lat: Double? = null, lng: Double? = null, language: String? = null): List<PlacePrediction> {
         return httpClient.get("$baseUrl/api/autocomplete") {
             parameter("query", query)
             lat?.let { parameter("lat", it) }
             lng?.let { parameter("lng", it) }
+            language?.let { parameter("language", it) }
         }.body()
     }
 
     // --- REST: Place Details ---
 
-    suspend fun getPlaceDetails(placeId: String): Venue {
-        return httpClient.get("$baseUrl/api/place/$placeId").body()
+    suspend fun getPlaceDetails(placeId: String, language: String? = null): Venue {
+        return httpClient.get("$baseUrl/api/place/$placeId") {
+            language?.let { parameter("language", it) }
+        }.body()
     }
 
     // --- WebSocket ---
