@@ -1,6 +1,7 @@
 package org.bytestorm.bitesync.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -122,6 +123,18 @@ fun FinalPlanScreen(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                             fontSize = 14.sp,
                             textAlign = TextAlign.Center
+                        )
+                    }
+                    if (!venue.phoneNumber.isNullOrBlank()) {
+                        Text(
+                            "\uD83D\uDCDE ${venue.phoneNumber}",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.clickable {
+                                val tel = venue.phoneNumber.replace(" ", "")
+                                uriHandler.openUri("tel:$tel")
+                            }
                         )
                     }
                 }

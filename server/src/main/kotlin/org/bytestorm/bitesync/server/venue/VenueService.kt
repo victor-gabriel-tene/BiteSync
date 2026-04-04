@@ -134,7 +134,7 @@ class VenueService {
     }
 
     private suspend fun googlePlaceDetails(placeId: String, language: String? = null): Venue? {
-        val fields = "id,displayName,rating,priceLevel,types,formattedAddress,photos"
+        val fields = "id,displayName,rating,priceLevel,types,formattedAddress,photos,internationalPhoneNumber"
 
         val responseText = client.get("https://places.googleapis.com/v1/places/$placeId") {
             header("X-Goog-Api-Key", googleApiKey)
@@ -180,7 +180,8 @@ class VenueService {
                 ?.mapNotNull { it.jsonPrimitive.contentOrNull }
                 ?.filter { it != "point_of_interest" && it != "establishment" }
                 ?: emptyList(),
-            address = result["formattedAddress"]?.jsonPrimitive?.contentOrNull ?: ""
+            address = result["formattedAddress"]?.jsonPrimitive?.contentOrNull ?: "",
+            phoneNumber = result["internationalPhoneNumber"]?.jsonPrimitive?.contentOrNull
         )
     }
 

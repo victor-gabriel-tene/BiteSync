@@ -11,7 +11,8 @@ data class Venue(
     val priceLevel: Int? = null,
     val categories: List<String> = emptyList(),
     val address: String = "",
-    val distance: Double? = null
+    val distance: Double? = null,
+    val phoneNumber: String? = null
 )
 
 @Serializable
