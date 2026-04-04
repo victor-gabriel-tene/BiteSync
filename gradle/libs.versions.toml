@@ -60,6 +60,10 @@ ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 dotenv = { module = "io.github.cdimascio:dotenv-kotlin", version = "6.4.1" }
 
+# Coil (image loading)
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.4.0" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version = "3.4.0" }
+
 # Logging
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
