@@ -210,7 +210,7 @@ class BiteSyncViewModel(
         if (_currentCardIndex.value >= _venues.value.size && !_doneSent) {
             _doneSent = true
             viewModelScope.launch {
-                client.send(ClientMessage.DoneSwiping())
+                currentClient.send(ClientMessage.DoneSwiping())
             }
         }
     }
