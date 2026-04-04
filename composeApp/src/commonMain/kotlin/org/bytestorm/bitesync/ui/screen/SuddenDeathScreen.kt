@@ -120,7 +120,7 @@ private fun SuddenDeathSplash(round: Int, venueCount: Int) {
                 strings.suddenDeath,
                 fontSize = 46.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFFFF4444),
+                color = Color.White,
                 modifier = Modifier.scale(pulse),
                 textAlign = TextAlign.Center,
                 letterSpacing = 4.sp
