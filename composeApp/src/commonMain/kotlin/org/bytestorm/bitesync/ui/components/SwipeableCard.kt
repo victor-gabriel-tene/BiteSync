@@ -200,7 +200,7 @@ private fun VenueInfoOverlay(venue: Venue) {
                             }
                         Text(stars, color = Color(0xFFFFD700), fontSize = 14.sp, letterSpacing = 1.sp)
                         Text(
-                            "%.1f".format(rating),
+                            "${(rating * 10).toInt() / 10.0}",
                             color = Color.White.copy(alpha = 0.9f),
                             fontWeight = FontWeight.Bold
                         )
