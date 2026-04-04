@@ -1,6 +1,8 @@
 package org.bytestorm.bitesync.settings
 
+import platform.Foundation.NSLocale
 import platform.Foundation.NSUserDefaults
+import platform.Foundation.preferredLanguages
 
 class IosSettingsRepository : SettingsRepository {
     private val defaults = NSUserDefaults.standardUserDefaults
@@ -19,6 +21,8 @@ class IosSettingsRepository : SettingsRepository {
         defaults.setBool(value, forKey = key)
     }
 
-    override fun getDeviceLanguageCode(): String =
-        platform.Foundation.NSLocale.currentLocale.languageCode ?: "en"
+    override fun getDeviceLanguageCode(): String {
+        val preferred = NSLocale.preferredLanguages.firstOrNull() as? String ?: return "en"
+        return preferred.substringBefore("-")
+    }
 }
