@@ -2,6 +2,7 @@ package org.bytestorm.bitesync.ui.screen
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -116,6 +118,47 @@ fun LobbyScreen(
 }
 
 @Composable
+private fun SegmentedControl(
+    isJoining: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFF1F0ED))
+            .padding(3.dp)
+    ) {
+        Row {
+            listOf(false, true).forEach { joinMode ->
+                val selected = isJoining == joinMode
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .then(
+                            if (selected) Modifier
+                                .shadow(2.dp, RoundedCornerShape(10.dp))
+                                .background(Color.White)
+                            else Modifier
+                        )
+                        .clickable { onToggle(joinMode) }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (joinMode) "Join Room" else "Create Room",
+                        fontSize = 13.sp,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                        color = if (selected) Color(0xFFFF6B6B) else Color.Gray
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun CreateOrJoinCard(
     userName: String,
     onUserNameChange: (String) -> Unit,
@@ -141,6 +184,13 @@ private fun CreateOrJoinCard(
             modifier = Modifier.padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            SegmentedControl(
+                isJoining = isJoining,
+                onToggle = { joining ->
+                    if (joining != isJoining) onToggleJoining()
+                }
+            )
+
             OutlinedTextField(
                 value = userName,
                 onValueChange = onUserNameChange,
@@ -222,22 +272,10 @@ private fun CreateOrJoinCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(
-                    onClick = onToggleJoining,
-                ) {
-                    Text(
-                        if (isJoining) "Create room instead" else "Join room",
-                        color = Color(0xFFFF6B6B),
-                        fontSize = 12.sp
-                    )
-                }
-
-                TextButton(
-                    onClick = onToggleSettings,
-                ) {
+                TextButton(onClick = onToggleSettings) {
                     Text(
                         if (showSettings) "Hide Settings" else "Settings",
                         color = Color.Gray,
@@ -281,15 +319,18 @@ private fun WaitingRoomCard(
                 fontWeight = FontWeight.Bold
             )
 
+            val displayedUsers = roomState.users.take(6)
+            val extraCount = roomState.users.size - displayedUsers.size
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(vertical = 8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                roomState.users.forEach { user ->
+                displayedUsers.forEach { user ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
                             modifier = Modifier
-                                .size(56.dp)
+                                .size(48.dp)
                                 .clip(CircleShape)
                                 .background(Color(0xFFFF8E53)),
                             contentAlignment = Alignment.Center
@@ -298,11 +339,31 @@ private fun WaitingRoomCard(
                                 user.displayName.take(1).uppercase(),
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp
+                                fontSize = 18.sp
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(user.displayName, style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            user.displayName.take(8),
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1
+                        )
+                    }
+                }
+                if (extraCount > 0) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE0E0E0)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "+$extraCount",
+                            color = Color.Gray,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
                     }
                 }
             }
