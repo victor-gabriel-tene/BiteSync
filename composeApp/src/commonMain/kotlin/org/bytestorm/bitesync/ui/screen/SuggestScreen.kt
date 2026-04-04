@@ -72,8 +72,10 @@ fun SuggestScreen(
     modifier: Modifier = Modifier
 ) {
     val strings = LocalStrings.current
-    var searchQuery by remember { mutableStateOf("") }
+    val searchQueryState = remember { mutableStateOf("") }
+    var searchQuery by searchQueryState
     val gradient = BiteSyncTheme.gradients.main
+    val myIsReady = roomState?.users?.find { it.id == myUserId }?.isReady ?: false
 
     Box(modifier = modifier.fillMaxSize().background(gradient)) {
         Column(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
@@ -102,24 +104,35 @@ fun SuggestScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = {
-                        searchQuery = it
-                        onSearchQueryChanged(it)
+                        if (!myIsReady) {
+                            searchQuery = it
+                            onSearchQueryChanged(it)
+                        }
                     },
-                    placeholder = { Text(strings.searchPlaceholder, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)) },
+                    readOnly = myIsReady,
+                    placeholder = {
+                        Text(
+                            if (myIsReady) strings.ready else strings.searchPlaceholder,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                        )
+                    },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = MaterialTheme.colorScheme.onBackground,
                         unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        disabledTextColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                         cursorColor = MaterialTheme.colorScheme.primary,
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                        disabledBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
                         focusedContainerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+                        unfocusedContainerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                        disabledContainerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.02f)
                     ),
                     trailingIcon = {
-                        if (isSearching) {
+                        if (isSearching && !myIsReady) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
                                 color = MaterialTheme.colorScheme.primary,
@@ -132,7 +145,7 @@ fun SuggestScreen(
 
             // Autocomplete dropdown
             AnimatedVisibility(
-                visible = predictions.isNotEmpty(),
+                visible = predictions.isNotEmpty() && !myIsReady,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -281,7 +294,7 @@ fun SuggestScreen(
                     }
                 }
 
-                val myIsReady = roomState?.users?.find { it.id == myUserId }?.isReady ?: false
+                val myIsReadyInternal = roomState?.users?.find { it.id == myUserId }?.isReady ?: false
                 Button(
                     onClick = onToggleReady,
                     enabled = submittedVenues.size >= 2,
@@ -290,11 +303,11 @@ fun SuggestScreen(
                         .height(52.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (myIsReady) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary
+                        containerColor = if (myIsReadyInternal) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text(
-                        if (myIsReady) strings.ready else strings.imReady,
+                        if (myIsReadyInternal) strings.ready else strings.imReady,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
