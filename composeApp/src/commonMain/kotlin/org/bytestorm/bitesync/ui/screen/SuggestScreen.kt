@@ -364,9 +364,10 @@ private fun SubmittedVenueItem(venue: Venue) {
                             fontSize = 12.sp
                         )
                     }
-                    if (venue.priceLevel != null) {
+                    val priceLevel = venue.priceLevel
+                    if (priceLevel != null) {
                         Text(
-                            "$".repeat(venue.priceLevel),
+                            "$".repeat(priceLevel),
                             color = Color(0xFF4CAF50),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold

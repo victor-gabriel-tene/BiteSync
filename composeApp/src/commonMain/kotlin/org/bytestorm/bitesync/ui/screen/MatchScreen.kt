@@ -113,9 +113,10 @@ fun MatchScreen(
                                 color = Color(0xFFFF8E53)
                             )
                         }
-                        if (venue.priceLevel != null) {
+                        val priceLevel = venue.priceLevel
+                        if (priceLevel != null) {
                             Text(
-                                "$".repeat(venue.priceLevel),
+                                "$".repeat(priceLevel),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF4CAF50)
