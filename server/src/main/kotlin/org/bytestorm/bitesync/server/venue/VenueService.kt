@@ -1,5 +1,6 @@
 package org.bytestorm.bitesync.server.venue
 
+import io.github.cdimascio.dotenv.dotenv
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -12,7 +13,10 @@ import org.bytestorm.bitesync.model.PlacePrediction
 import org.bytestorm.bitesync.model.Venue
 
 class VenueService {
-    private val googleApiKey = System.getenv("GOOGLE_PLACES_API_KEY") ?: ""
+    private val dotenv = dotenv {
+        ignoreIfMissing = true
+    }
+    private val googleApiKey = System.getenv("GOOGLE_PLACES_API_KEY") ?: dotenv["GOOGLE_PLACES_API_KEY"] ?: ""
 
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {

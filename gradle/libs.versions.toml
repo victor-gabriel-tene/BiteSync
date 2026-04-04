@@ -58,6 +58,7 @@ ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
 
 # Ktor Serialization (shared between client & server)
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+dotenv = { module = "io.github.cdimascio:dotenv-kotlin", version = "6.4.1" }
 
 # Logging
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }

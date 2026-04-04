@@ -22,6 +22,9 @@ dependencies {
 
     // Logging
     implementation(libs.logback.classic)
+    
+    // Dotenv for environment variables
+    implementation(libs.dotenv)
 }
 
 application {

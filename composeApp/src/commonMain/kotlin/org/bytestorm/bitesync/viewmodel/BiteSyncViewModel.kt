@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import org.bytestorm.bitesync.location.LocationTracker
 import org.bytestorm.bitesync.model.ClientMessage
 import org.bytestorm.bitesync.model.PlacePrediction
 import org.bytestorm.bitesync.model.RoomState
@@ -24,7 +25,10 @@ sealed interface AppScreen {
     data class Match(val venue: Venue) : AppScreen
 }
 
-class BiteSyncViewModel(serverUrl: String) : ViewModel() {
+class BiteSyncViewModel(
+    serverUrl: String,
+    private val locationTracker: LocationTracker? = null
+) : ViewModel() {
     private val client = BiteSyncClient(serverUrl)
 
     // --- Navigation ---
@@ -123,7 +127,13 @@ class BiteSyncViewModel(serverUrl: String) : ViewModel() {
             delay(300) // debounce
             _isSearching.value = true
             try {
-                _predictions.value = client.autocomplete(query)
+                // Try to get user location first
+                val location = locationTracker?.getCurrentLocation()
+                _predictions.value = client.autocomplete(
+                    query = query,
+                    lat = location?.first,
+                    lng = location?.second
+                )
             } catch (e: Exception) {
                 _error.value = "Search failed: ${e.message}"
             } finally {
