@@ -66,23 +66,19 @@ class BiteSyncViewModel(serverUrl: String) : ViewModel() {
         _error.value = null
         viewModelScope.launch {
             try {
-                // We use withTimeout to avoid hanging if the server is unreachable
-                kotlinx.coroutines.withTimeout(5000L) {
-                    val connectionJob = launch {
-                        try {
-                            client.connectWebSocket { message -> handleServerMessage(message) }
-                        } catch (e: Exception) {
-                            _error.value = "WebSocket error: ${e.message}"
-                        } finally {
-                            _isConnecting.value = false
-                        }
+                viewModelScope.launch {
+                    try {
+                        client.connectWebSocket { message -> handleServerMessage(message) }
+                    } catch (e: Exception) {
+                        _error.value = "WebSocket error: ${e.message}"
                     }
-
-                    // Wait until connected becomes true
-                    client.connected.first { it }
-                    _isConnecting.value = false
-                    action()
                 }
+
+                kotlinx.coroutines.withTimeout(5000L) {
+                    client.connected.first { it }
+                }
+                _isConnecting.value = false
+                action()
             } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
                 _error.value = "Connection timeout. Is the server running?"
                 _isConnecting.value = false
