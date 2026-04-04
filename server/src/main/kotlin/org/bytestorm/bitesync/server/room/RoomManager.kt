@@ -28,6 +28,14 @@ class RoomManager(private val json: Json) {
 
     fun getRoom(pin: String): Room? = rooms[pin]
 
+    fun setUserReady(pin: String, userId: String, ready: Boolean): Boolean {
+        val room = rooms[pin] ?: return false
+        val userSession = room.users[userId] ?: return false
+        room.users[userId] = userSession.copy(user = userSession.user.copy(isReady = ready))
+
+        return room.users.values.all { it.user.isReady }
+    }
+
     fun updateStatus(pin: String, status: RoomStatus) {
         rooms[pin]?.status = status
     }

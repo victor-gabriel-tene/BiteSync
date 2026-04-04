@@ -40,6 +40,7 @@ fun App(
         val isSearching by viewModel.isSearching.collectAsState()
         val error by viewModel.error.collectAsState()
         val isConnecting by viewModel.isConnecting.collectAsState()
+        val myUserId by viewModel.myUserId.collectAsState()
 
         Box(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
         when (val currentScreen = screen) {
@@ -61,9 +62,11 @@ fun App(
                     predictions = predictions,
                     isSearching = isSearching,
                     error = error,
+                    myUserId = myUserId,
                     onSearchQueryChanged = { viewModel.onSearchQueryChanged(it) },
                     onPredictionSelected = { viewModel.onPredictionSelected(it) },
                     onStartSwiping = { viewModel.startSwiping() },
+                    onToggleReady = { viewModel.toggleReady() },
                     onClearError = { viewModel.clearError() }
                 )
             }

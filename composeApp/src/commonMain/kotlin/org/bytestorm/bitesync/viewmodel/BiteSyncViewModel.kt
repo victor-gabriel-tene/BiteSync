@@ -52,6 +52,9 @@ class BiteSyncViewModel(
     private val _roomState = MutableStateFlow<RoomState?>(null)
     val roomState: StateFlow<RoomState?> = _roomState.asStateFlow()
 
+    private val _myUserId = MutableStateFlow<String?>(null)
+    val myUserId: StateFlow<String?> = _myUserId.asStateFlow()
+
     // --- Swiping ---
     private val _venues = MutableStateFlow<List<Venue>>(emptyList())
     val venues: StateFlow<List<Venue>> = _venues.asStateFlow()
@@ -196,6 +199,11 @@ class BiteSyncViewModel(
         sendMessage(ClientMessage.StartSwiping())
     }
 
+    fun toggleReady() {
+        val currentReady = _roomState.value?.users?.find { it.id == _myUserId.value }?.isReady ?: false
+        sendMessage(ClientMessage.SetReady(!currentReady))
+    }
+
     // ======== Swipe actions ========
 
     fun onSwipe(venueId: String, liked: Boolean) {
@@ -224,6 +232,7 @@ class BiteSyncViewModel(
     fun returnToLobby() {
         _screen.value = AppScreen.Lobby
         _roomState.value = null
+        _myUserId.value = null
         _venues.value = emptyList()
         _currentCardIndex.value = 0
         _predictions.value = emptyList()
@@ -239,6 +248,12 @@ class BiteSyncViewModel(
         when (message) {
             is ServerMessage.RoomCreated -> {
                 _roomState.value = message.roomState
+                _myUserId.value = message.userId
+            }
+
+            is ServerMessage.RoomJoined -> {
+                _roomState.value = message.roomState
+                _myUserId.value = message.userId
             }
 
             is ServerMessage.RoomUpdate -> {
