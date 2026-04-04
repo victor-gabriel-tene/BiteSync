@@ -191,10 +191,16 @@ private fun VenueInfoOverlay(venue: Venue) {
                 ) {
                     venue.rating?.let { rating ->
                         val fullStars = rating.toInt()
-                        val stars = "\u2605".repeat(fullStars) + "\u2606".repeat(5 - fullStars)
-                        Text(stars, color = Color(0xFFFFD700), fontSize = 14.sp)
+                        val hasHalf = (rating - fullStars) >= 0.5f
+                        val emptyStars = 5 - fullStars - (if (hasHalf) 1 else 0)
+                        val stars = "\u2605".repeat(fullStars) +
+                            (if (hasHalf) "\u00BD" else "") +
+                            "\u2605".repeat(emptyStars).let {
+                                "\u2606".repeat(emptyStars)
+                            }
+                        Text(stars, color = Color(0xFFFFD700), fontSize = 14.sp, letterSpacing = 1.sp)
                         Text(
-                            "$rating",
+                            "%.1f".format(rating),
                             color = Color.White.copy(alpha = 0.9f),
                             fontWeight = FontWeight.Bold
                         )

@@ -134,7 +134,8 @@ fun SuggestScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2a4e))
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2a4e)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column {
                         predictions.forEachIndexed { index, prediction ->
