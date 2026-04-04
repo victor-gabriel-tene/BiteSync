@@ -82,7 +82,7 @@ fun MatchScreen(
                 strings.itsAMatch,
                 fontSize = 36.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.fillMaxWidth().scale(scale),
                 textAlign = TextAlign.Center,
                 maxLines = 2
@@ -90,7 +90,7 @@ fun MatchScreen(
             Text(
                 if (random) strings.randomlyChosen else strings.everyoneAgreed,
                 fontSize = 16.sp,
-                color = Color.White.copy(alpha = 0.9f)
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -163,7 +163,7 @@ fun MatchScreen(
                     strings.areYouComing,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
@@ -182,8 +182,8 @@ fun MatchScreen(
                         onClick = { onSetAttendance(false) },
                         modifier = Modifier.weight(1f).height(52.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color.White.copy(alpha = 0.6f))
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
                     ) {
                         Text(strings.notThisTime, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                     }
@@ -193,13 +193,13 @@ fun MatchScreen(
                     if (myVote) "\u2705 ${strings.imIn}" else "\u274C ${strings.notThisTime}",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     strings.respondedCount(respondedCount, totalUsers),
                     fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
             }
         }

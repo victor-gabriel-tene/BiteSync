@@ -73,7 +73,7 @@ fun FinalPlanScreen(
                 strings.thePlan,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             // Restaurant card
@@ -200,8 +200,8 @@ fun FinalPlanScreen(
                 onClick = onBackToLobby,
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, Color.White.copy(alpha = 0.5f))
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
             ) {
                 Text(strings.backToLobby, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
             }
