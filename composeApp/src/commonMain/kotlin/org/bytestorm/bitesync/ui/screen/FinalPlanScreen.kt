@@ -125,15 +125,15 @@ fun FinalPlanScreen(
                             textAlign = TextAlign.Center
                         )
                     }
-                    if (!venue.phoneNumber.isNullOrBlank()) {
+                    val phone = venue.phoneNumber
+                    if (!phone.isNullOrBlank()) {
                         Text(
-                            "\uD83D\uDCDE ${venue.phoneNumber}",
+                            "\uD83D\uDCDE $phone",
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.clickable {
-                                val tel = venue.phoneNumber.replace(" ", "")
-                                uriHandler.openUri("tel:$tel")
+                                uriHandler.openUri("tel:${phone.replace(" ", "")}")
                             }
                         )
                     }
