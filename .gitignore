@@ -4,8 +4,8 @@
 **/build/
 xcuserdata
 !src/**/build/
-./gradle.properties
-./local.properties
+gradle.properties
+local.properties
 .idea
 .DS_Store
 captures
