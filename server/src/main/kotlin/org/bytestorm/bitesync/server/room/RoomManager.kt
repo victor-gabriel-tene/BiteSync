@@ -49,6 +49,88 @@ class RoomManager(private val json: Json) {
         return null
     }
 
+    // ======== Done Swiping / Sudden Death ========
+
+    /**
+     * Mark a user as finished swiping. Returns true when ALL users are done.
+     */
+    fun markUserDone(pin: String, userId: String): Boolean {
+        val room = rooms[pin] ?: return false
+        room.finishedUsers.add(userId)
+        return room.finishedUsers.size >= room.users.size
+    }
+
+    /**
+     * After all users finish swiping, find the venues with the most likes.
+     * Returns null if no venues were liked at all (edge case).
+     */
+    sealed class SwipeResult {
+        data class Winner(val venue: Venue) : SwipeResult()
+        data class Tied(val venues: List<Venue>) : SwipeResult()
+        data object NoLikes : SwipeResult()
+    }
+
+    fun calculateTopVenues(pin: String): SwipeResult {
+        val room = rooms[pin] ?: return SwipeResult.NoLikes
+        if (room.votes.isEmpty()) return SwipeResult.NoLikes
+
+        val maxLikes = room.votes.values.maxOf { it.size }
+        val topVenueIds = room.votes.filter { it.value.size == maxLikes }.keys
+        val topVenues = room.submittedVenues.filter { it.id in topVenueIds }
+
+        return if (topVenues.size == 1) {
+            SwipeResult.Winner(topVenues.first())
+        } else {
+            SwipeResult.Tied(topVenues)
+        }
+    }
+
+    /**
+     * Process a swipe during a sudden death round.
+     */
+    fun processSuddenDeathSwipe(pin: String, userId: String, venueId: String, liked: Boolean) {
+        val room = rooms[pin] ?: return
+        if (!liked) return
+        val likers = room.suddenDeathVotes.getOrPut(venueId) { mutableSetOf() }
+        likers.add(userId)
+    }
+
+    /**
+     * Mark a user as finished in the current sudden death round.
+     * Returns true when ALL users are done with this round.
+     */
+    fun markSuddenDeathUserDone(pin: String, userId: String): Boolean {
+        val room = rooms[pin] ?: return false
+        room.suddenDeathFinishedUsers.add(userId)
+        return room.suddenDeathFinishedUsers.size >= room.users.size
+    }
+
+    /**
+     * After all users finish a sudden death round, resolve the outcome.
+     */
+    fun resolveSuddenDeath(pin: String): SwipeResult {
+        val room = rooms[pin] ?: return SwipeResult.NoLikes
+        val currentVenues = room.suddenDeathVenues
+
+        if (room.suddenDeathVotes.isEmpty()) {
+            // Nobody liked anything - pick random from current candidates
+            return SwipeResult.Winner(currentVenues.random())
+        }
+
+        val maxLikes = room.suddenDeathVotes.values.maxOf { it.size }
+        val topVenueIds = room.suddenDeathVotes.filter { it.value.size == maxLikes }.keys
+        val topVenues = currentVenues.filter { it.id in topVenueIds }
+
+        return when {
+            topVenues.size == 1 -> SwipeResult.Winner(topVenues.first())
+            topVenues.size >= room.getPreviousSuddenDeathTopCount() -> {
+                // No progress - pick random
+                SwipeResult.Winner(topVenues.random())
+            }
+            else -> SwipeResult.Tied(topVenues)
+        }
+    }
+
     fun removeUser(pin: String, userId: String): Room? {
         val room = rooms[pin] ?: return null
         room.users.remove(userId)

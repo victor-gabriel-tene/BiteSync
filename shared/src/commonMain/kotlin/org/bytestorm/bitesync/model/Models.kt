@@ -30,7 +30,7 @@ data class PlacePrediction(
 
 @Serializable
 enum class RoomStatus {
-    WAITING, SUGGESTING, SWIPING, MATCH_FOUND
+    WAITING, SUGGESTING, SWIPING, SUDDEN_DEATH, MATCH_FOUND
 }
 
 @Serializable

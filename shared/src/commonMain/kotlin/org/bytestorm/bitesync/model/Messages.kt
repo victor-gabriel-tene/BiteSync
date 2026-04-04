@@ -31,6 +31,10 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("swipe")
     data class Swipe(val venueId: String, val liked: Boolean) : ClientMessage
+
+    @Serializable
+    @SerialName("done_swiping")
+    data class DoneSwiping(val unused: Int = 0) : ClientMessage
 }
 
 @Serializable
@@ -55,6 +59,10 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("match_found")
     data class MatchFound(val venue: Venue) : ServerMessage
+
+    @Serializable
+    @SerialName("sudden_death")
+    data class SuddenDeath(val venues: List<Venue>, val round: Int) : ServerMessage
 
     @Serializable
     @SerialName("error")
