@@ -150,42 +150,6 @@ fun SwipeScreen(
                 onSwipeProgress = { swipeProgress = it },
                 modifier = Modifier.weight(1f)
             )
-
-            // Action buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 40.dp, vertical = 20.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFF44336).copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("\u2715", fontSize = 22.sp, color = Color(0xFFF44336))
-                    }
-                    Text("Nope", color = Color(0xFFF44336), fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 4.dp))
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF4CAF50).copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("\u2665", fontSize = 22.sp, color = Color(0xFF4CAF50))
-                    }
-                    Text("Like", color = Color(0xFF4CAF50), fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 4.dp))
-                }
-            }
         }
     }
 }
