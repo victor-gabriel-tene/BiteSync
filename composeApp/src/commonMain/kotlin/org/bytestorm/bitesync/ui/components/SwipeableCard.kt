@@ -189,19 +189,19 @@ private fun VenueInfoOverlay(venue: Venue) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (venue.rating != null) {
-                        val fullStars = venue.rating.toInt()
+                    venue.rating?.let { rating ->
+                        val fullStars = rating.toInt()
                         val stars = "\u2605".repeat(fullStars) + "\u2606".repeat(5 - fullStars)
                         Text(stars, color = Color(0xFFFFD700), fontSize = 14.sp)
                         Text(
-                            "${venue.rating}",
+                            "$rating",
                             color = Color.White.copy(alpha = 0.9f),
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    if (venue.priceLevel != null) {
+                    venue.priceLevel?.let { price ->
                         Text(
-                            "$".repeat(venue.priceLevel),
+                            "$".repeat(price),
                             color = Color(0xFF4CAF50),
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
