@@ -106,7 +106,8 @@ private fun SuddenDeathSplash(round: Int, venueCount: Int) {
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(horizontal = 24.dp)
         ) {
             Text(
                 "\u2694\uFE0F",
@@ -114,19 +115,20 @@ private fun SuddenDeathSplash(round: Int, venueCount: Int) {
                 modifier = Modifier.scale(pulse)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Text(
                 strings.suddenDeath,
-                fontSize = 46.sp,
+                fontSize = 38.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color.White,
-                modifier = Modifier.scale(pulse),
+                color = Color(0xFFFF4444),
+                modifier = Modifier.fillMaxWidth().scale(pulse),
                 textAlign = TextAlign.Center,
-                letterSpacing = 4.sp
+                letterSpacing = 3.sp,
+                maxLines = 2
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 strings.roundNumber(round),
