@@ -53,6 +53,8 @@ import coil3.compose.AsyncImage
 import org.bytestorm.bitesync.model.PlacePrediction
 import org.bytestorm.bitesync.model.RoomState
 import org.bytestorm.bitesync.model.Venue
+import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
+import org.bytestorm.bitesync.ui.theme.Yellow
 
 @Composable
 fun SuggestScreen(
@@ -69,10 +71,7 @@ fun SuggestScreen(
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
-
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF1a1a2e), Color(0xFF16213e))
-    )
+    val gradient = BiteSyncTheme.gradients.main
 
     Box(modifier = modifier.fillMaxSize().background(gradient)) {
         Column(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
@@ -84,14 +83,14 @@ fun SuggestScreen(
             ) {
                 Text(
                     "Add Restaurants",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp
                 )
                 if (roomState != null) {
                     Text(
                         "Room: ${roomState.pin} \u00B7 ${roomState.users.size} players",
-                        color = Color.White.copy(alpha = 0.6f),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                         fontSize = 13.sp
                     )
                 }
@@ -105,24 +104,24 @@ fun SuggestScreen(
                         searchQuery = it
                         onSearchQueryChanged(it)
                     },
-                    placeholder = { Text("Search for a restaurant...", color = Color.White.copy(alpha = 0.4f)) },
+                    placeholder = { Text("Search for a restaurant...", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        cursorColor = Color(0xFFFF6B6B),
-                        focusedBorderColor = Color(0xFFFF6B6B),
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                        focusedContainerColor = Color.White.copy(alpha = 0.08f),
-                        unfocusedContainerColor = Color.White.copy(alpha = 0.05f)
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                        focusedContainerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
                     ),
                     trailingIcon = {
                         if (isSearching) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
-                                color = Color(0xFFFF6B6B),
+                                color = MaterialTheme.colorScheme.primary,
                                 strokeWidth = 2.dp
                             )
                         }
@@ -141,7 +140,7 @@ fun SuggestScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2a4e)),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column {
@@ -167,7 +166,7 @@ fun SuggestScreen(
             if (error != null) {
                 Text(
                     error,
-                    color = Color(0xFFFF6B6B),
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 13.sp,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
@@ -185,7 +184,7 @@ fun SuggestScreen(
             ) {
                 Text(
                     "Added (${submittedVenues.size})",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
@@ -229,12 +228,12 @@ fun SuggestScreen(
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
                                     "Search and add restaurants above",
-                                    color = Color.White.copy(alpha = 0.5f),
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                                     fontSize = 14.sp
                                 )
                                 Text(
                                     "Everyone can contribute!",
-                                    color = Color.White.copy(alpha = 0.4f),
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                                     fontSize = 13.sp
                                 )
                             }
@@ -261,12 +260,12 @@ fun SuggestScreen(
                                 modifier = Modifier
                                     .size(32.dp)
                                     .clip(CircleShape)
-                                    .background(if (user.isReady) Color(0xFF4CAF50) else Color.White.copy(alpha = 0.2f)),
+                                    .background(if (user.isReady) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = user.displayName.take(1).uppercase(),
-                                    color = Color.White,
+                                    color = if (user.isReady) Color.White else MaterialTheme.colorScheme.onBackground,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp
                                 )
@@ -277,7 +276,7 @@ fun SuggestScreen(
                         val totalCount = roomState.users.size
                         Text(
                             "$readyCount/$totalCount ready",
-                            color = Color.White.copy(alpha = 0.6f),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                             fontSize = 12.sp
                         )
                     }
@@ -292,7 +291,7 @@ fun SuggestScreen(
                         .height(52.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (myIsReady) Color(0xFF4CAF50) else Color(0xFFFF6B6B)
+                        containerColor = if (myIsReady) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text(
@@ -305,7 +304,7 @@ fun SuggestScreen(
                 if (submittedVenues.size < 2) {
                     Text(
                         "Add at least 2 restaurants to be ready",
-                        color = Color.White.copy(alpha = 0.4f),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                         fontSize = 12.sp,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
@@ -340,7 +339,7 @@ private fun PredictionItem(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 prediction.mainText,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp,
                 maxLines = 1,
@@ -349,7 +348,7 @@ private fun PredictionItem(
             if (prediction.secondaryText.isNotEmpty()) {
                 Text(
                     prediction.secondaryText,
-                    color = Color.White.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -386,14 +385,14 @@ private fun SubmittedVenueItem(venue: Venue) {
                         .clip(RoundedCornerShape(10.dp))
                         .background(
                             Brush.linearGradient(
-                                colors = listOf(Color(0xFFFF6B6B), Color(0xFFFF8E53))
+                                colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
                             )
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         venue.name.take(1).uppercase(),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -403,7 +402,7 @@ private fun SubmittedVenueItem(venue: Venue) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     venue.name,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
                     maxLines = 1,
@@ -416,7 +415,7 @@ private fun SubmittedVenueItem(venue: Venue) {
                     if (venue.rating != null) {
                         Text(
                             "\u2B50 ${venue.rating}",
-                            color = Color(0xFFFFD93D),
+                            color = Yellow,
                             fontSize = 12.sp
                         )
                     }
@@ -432,7 +431,7 @@ private fun SubmittedVenueItem(venue: Venue) {
                     if (venue.categories.isNotEmpty()) {
                         Text(
                             venue.categories.take(2).joinToString(", ") { it.replace("_", " ") },
-                            color = Color.White.copy(alpha = 0.5f),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                             fontSize = 12.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis

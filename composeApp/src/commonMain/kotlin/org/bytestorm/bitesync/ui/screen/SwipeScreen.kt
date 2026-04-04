@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.bytestorm.bitesync.model.RoomState
+import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
 import org.bytestorm.bitesync.model.Venue
 import org.bytestorm.bitesync.ui.components.SwipeableCardStack
 
@@ -44,9 +46,7 @@ fun SwipeScreen(
     onSwipe: (venueId: String, liked: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF1a1a2e), Color(0xFF16213e))
-    )
+    val gradient = BiteSyncTheme.gradients.main
 
     var swipeProgress by remember { mutableFloatStateOf(0f) }
 
@@ -94,23 +94,23 @@ fun SwipeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("Swiping", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("Swiping", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     if (roomState != null) {
                         Text(
                             "Room: ${roomState.pin} \u00B7 ${roomState.users.size} users",
-                            color = Color.White.copy(alpha = 0.6f),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                             fontSize = 13.sp
                         )
                     }
                 }
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.White.copy(alpha = 0.15f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f)
                 ) {
                     Text(
                         "${currentIndex.coerceAtMost(venues.size)}/${venues.size}",
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -125,7 +125,7 @@ fun SwipeScreen(
                         .padding(horizontal = 20.dp)
                         .height(3.dp)
                         .clip(RoundedCornerShape(99.dp))
-                        .background(Color.White.copy(alpha = 0.15f))
+                        .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
                 ) {
                     Box(
                         modifier = Modifier
@@ -133,7 +133,7 @@ fun SwipeScreen(
                             .height(3.dp)
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFFFF6B6B), Color(0xFFFF8E53))
+                                    listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
                                 )
                             )
                     )
@@ -150,42 +150,6 @@ fun SwipeScreen(
                 onSwipeProgress = { swipeProgress = it },
                 modifier = Modifier.weight(1f)
             )
-
-            // Action buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 40.dp, vertical = 20.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFF44336).copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("\u2715", fontSize = 22.sp, color = Color(0xFFF44336))
-                    }
-                    Text("Nope", color = Color(0xFFF44336), fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 4.dp))
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF4CAF50).copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("\u2665", fontSize = 22.sp, color = Color(0xFF4CAF50))
-                    }
-                    Text("Like", color = Color(0xFF4CAF50), fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 4.dp))
-                }
-            }
         }
     }
 }

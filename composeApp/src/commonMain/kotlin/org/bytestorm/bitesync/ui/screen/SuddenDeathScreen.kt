@@ -48,6 +48,7 @@ import kotlinx.coroutines.delay
 import org.bytestorm.bitesync.model.RoomState
 import org.bytestorm.bitesync.model.Venue
 import org.bytestorm.bitesync.ui.components.SwipeableCardStack
+import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
 
 @Composable
 fun SuddenDeathScreen(
@@ -99,9 +100,7 @@ private fun SuddenDeathSplash(round: Int, venueCount: Int) {
         )
     )
 
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF1a0000), Color(0xFF8B0000), Color(0xFF1a0000))
-    )
+    val gradient = BiteSyncTheme.gradients.suddenDeath
 
     Box(
         modifier = Modifier.fillMaxSize().background(gradient),
@@ -175,9 +174,7 @@ private fun SuddenDeathSwipeContent(
     roomState: RoomState?,
     onSwipe: (venueId: String, liked: Boolean) -> Unit
 ) {
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF2a0a0a), Color(0xFF1a1a2e))
-    )
+    val gradient = BiteSyncTheme.gradients.suddenDeath
 
     Box(modifier = Modifier.fillMaxSize().background(gradient)) {
         Column(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
@@ -198,7 +195,7 @@ private fun SuddenDeathSwipeContent(
                         )
                         Text(
                             "SUDDEN DEATH",
-                            color = Color(0xFFFF4444),
+                            color = Color.White,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 20.sp,
                             letterSpacing = 2.sp
@@ -207,19 +204,19 @@ private fun SuddenDeathSwipeContent(
                     if (roomState != null) {
                         Text(
                             "Round $round \u00B7 ${roomState.users.size} players",
-                            color = Color.White.copy(alpha = 0.6f),
+                            color = Color.White.copy(alpha = 0.7f),
                             fontSize = 13.sp
                         )
                     }
                 }
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color(0xFFFF4444).copy(alpha = 0.2f)
+                    color = Color.White.copy(alpha = 0.2f)
                 ) {
                     Text(
                         "${currentIndex.coerceAtMost(venues.size)}/${venues.size}",
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                        color = Color(0xFFFF4444),
+                        color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -255,48 +252,6 @@ private fun SuddenDeathSwipeContent(
                 onSwipe = onSwipe,
                 modifier = Modifier.weight(1f)
             )
-
-            // Action buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 40.dp, vertical = 20.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFF44336).copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("\u2715", fontSize = 22.sp, color = Color(0xFFF44336))
-                    }
-                    Text(
-                        "Nope", color = Color(0xFFF44336), fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF4CAF50).copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("\u2665", fontSize = 22.sp, color = Color(0xFF4CAF50))
-                    }
-                    Text(
-                        "Like", color = Color(0xFF4CAF50), fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-            }
         }
     }
 }
