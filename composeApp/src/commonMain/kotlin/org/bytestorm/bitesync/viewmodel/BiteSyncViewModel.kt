@@ -22,6 +22,7 @@ sealed interface AppScreen {
     data object Lobby : AppScreen
     data object Suggesting : AppScreen
     data object Swiping : AppScreen
+    data class SuddenDeath(val venues: List<Venue>, val round: Int) : AppScreen
     data class Match(val venue: Venue) : AppScreen
 }
 
@@ -52,6 +53,12 @@ class BiteSyncViewModel(
 
     private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
+
+    // --- Sudden Death ---
+    private val _suddenDeathRound = MutableStateFlow(0)
+    val suddenDeathRound: StateFlow<Int> = _suddenDeathRound.asStateFlow()
+
+    private var _doneSent = false
 
     // --- General ---
     private val _error = MutableStateFlow<String?>(null)
@@ -167,6 +174,14 @@ class BiteSyncViewModel(
             client.send(ClientMessage.Swipe(venueId, liked))
         }
         _currentCardIndex.value++
+
+        // Auto-send DoneSwiping when user has swiped all cards
+        if (_currentCardIndex.value >= _venues.value.size && !_doneSent) {
+            _doneSent = true
+            viewModelScope.launch {
+                client.send(ClientMessage.DoneSwiping())
+            }
+        }
     }
 
     // ======== General ========
@@ -183,6 +198,8 @@ class BiteSyncViewModel(
         _predictions.value = emptyList()
         _error.value = null
         _isConnecting.value = false
+        _suddenDeathRound.value = 0
+        _doneSent = false
     }
 
     // ======== Server message handler ========
@@ -206,6 +223,7 @@ class BiteSyncViewModel(
                             _screen.value = AppScreen.Swiping
                         }
                     }
+                    RoomStatus.SUDDEN_DEATH -> {} // Handled by ServerMessage.SuddenDeath
                     else -> {}
                 }
             }
@@ -217,7 +235,16 @@ class BiteSyncViewModel(
             is ServerMessage.VenuesLoaded -> {
                 _venues.value = message.venues
                 _currentCardIndex.value = 0
+                _doneSent = false
                 _screen.value = AppScreen.Swiping
+            }
+
+            is ServerMessage.SuddenDeath -> {
+                _venues.value = message.venues
+                _currentCardIndex.value = 0
+                _doneSent = false
+                _suddenDeathRound.value = message.round
+                _screen.value = AppScreen.SuddenDeath(message.venues, message.round)
             }
 
             is ServerMessage.MatchFound -> {

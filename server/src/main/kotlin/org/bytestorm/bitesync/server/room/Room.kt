@@ -18,11 +18,32 @@ class Room(val pin: String) {
     val submittedVenues = mutableListOf<Venue>()
     val votes = mutableMapOf<String, MutableSet<String>>()
 
+    // Tracks which users have finished swiping all cards
+    val finishedUsers = mutableSetOf<String>()
+
+    // Sudden death state
+    var suddenDeathRound: Int = 0
+    val suddenDeathVenues = mutableListOf<Venue>()
+    val suddenDeathVotes = mutableMapOf<String, MutableSet<String>>()
+    val suddenDeathFinishedUsers = mutableSetOf<String>()
+    private var previousSuddenDeathTopCount: Int = -1
+
     fun addVenue(venue: Venue) {
         if (submittedVenues.none { it.id == venue.id }) {
             submittedVenues.add(venue)
         }
     }
+
+    fun resetForSuddenDeathRound(venues: List<Venue>) {
+        suddenDeathRound++
+        suddenDeathVenues.clear()
+        suddenDeathVenues.addAll(venues)
+        suddenDeathVotes.clear()
+        suddenDeathFinishedUsers.clear()
+        previousSuddenDeathTopCount = venues.size
+    }
+
+    fun getPreviousSuddenDeathTopCount(): Int = previousSuddenDeathTopCount
 
     fun toRoomState(): RoomState = RoomState(
         pin = pin,

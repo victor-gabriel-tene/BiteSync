@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.bytestorm.bitesync.location.LocationTracker
 import org.bytestorm.bitesync.ui.screen.LobbyScreen
 import org.bytestorm.bitesync.ui.screen.MatchScreen
+import org.bytestorm.bitesync.ui.screen.SuddenDeathScreen
 import org.bytestorm.bitesync.ui.screen.SuggestScreen
 import org.bytestorm.bitesync.ui.screen.SwipeScreen
 import org.bytestorm.bitesync.viewmodel.AppScreen
@@ -63,6 +64,16 @@ fun App(locationTracker: LocationTracker? = null) {
                 SwipeScreen(
                     venues = venues,
                     currentIndex = currentIndex,
+                    roomState = roomState,
+                    onSwipe = { venueId, liked -> viewModel.onSwipe(venueId, liked) }
+                )
+            }
+
+            is AppScreen.SuddenDeath -> {
+                SuddenDeathScreen(
+                    venues = venues,
+                    currentIndex = currentIndex,
+                    round = currentScreen.round,
                     roomState = roomState,
                     onSwipe = { venueId, liked -> viewModel.onSwipe(venueId, liked) }
                 )
