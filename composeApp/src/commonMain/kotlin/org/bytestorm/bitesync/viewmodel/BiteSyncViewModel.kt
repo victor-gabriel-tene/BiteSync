@@ -134,6 +134,8 @@ class BiteSyncViewModel(
                     lat = location?.first,
                     lng = location?.second
                 )
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _error.value = "Search failed: ${e.message}"
             } finally {
