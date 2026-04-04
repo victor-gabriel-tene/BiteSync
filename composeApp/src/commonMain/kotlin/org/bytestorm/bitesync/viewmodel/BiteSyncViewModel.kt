@@ -25,6 +25,14 @@ sealed interface AppScreen {
     data object Swiping : AppScreen
     data class SuddenDeath(val venues: List<Venue>, val round: Int) : AppScreen
     data class Match(val venue: Venue, val random: Boolean = false) : AppScreen
+
+    fun order(): Int = when (this) {
+        is Lobby -> 0
+        is Suggesting -> 1
+        is Swiping -> 2
+        is SuddenDeath -> 3
+        is Match -> 4
+    }
 }
 
 class BiteSyncViewModel(

@@ -1,5 +1,12 @@
 package org.bytestorm.bitesync
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -36,59 +43,73 @@ fun App(
         val isConnecting by viewModel.isConnecting.collectAsState()
         val myUserId by viewModel.myUserId.collectAsState()
 
-        when (val currentScreen = screen) {
-            is AppScreen.Lobby -> {
-                LobbyScreen(
-                    roomState = roomState,
-                    isConnecting = isConnecting,
-                    error = error,
-                    onCreateRoom = { name -> viewModel.createRoom(name) },
-                    onJoinRoom = { pin, name -> viewModel.joinRoom(pin, name) },
-                    onStartSuggesting = { viewModel.startSuggesting() },
-                    onClearError = { viewModel.clearError() }
-                )
+        AnimatedContent(
+            targetState = screen,
+            transitionSpec = {
+                val forward = targetState.order() >= initialState.order()
+                if (forward) {
+                    (slideInHorizontally(tween(350)) { it / 3 } + fadeIn(tween(350)))
+                        .togetherWith(slideOutHorizontally(tween(350)) { -it / 3 } + fadeOut(tween(250)))
+                } else {
+                    (slideInHorizontally(tween(350)) { -it / 3 } + fadeIn(tween(350)))
+                        .togetherWith(slideOutHorizontally(tween(350)) { it / 3 } + fadeOut(tween(250)))
+                }
             }
+        ) { currentScreen ->
+            when (currentScreen) {
+                is AppScreen.Lobby -> {
+                    LobbyScreen(
+                        roomState = roomState,
+                        isConnecting = isConnecting,
+                        error = error,
+                        onCreateRoom = { name -> viewModel.createRoom(name) },
+                        onJoinRoom = { pin, name -> viewModel.joinRoom(pin, name) },
+                        onStartSuggesting = { viewModel.startSuggesting() },
+                        onClearError = { viewModel.clearError() }
+                    )
+                }
 
-            is AppScreen.Suggesting -> {
-                SuggestScreen(
-                    roomState = roomState,
-                    predictions = predictions,
-                    isSearching = isSearching,
-                    error = error,
-                    myUserId = myUserId,
-                    onSearchQueryChanged = { viewModel.onSearchQueryChanged(it) },
-                    onPredictionSelected = { viewModel.onPredictionSelected(it) },
-                    onStartSwiping = { viewModel.startSwiping() },
-                    onToggleReady = { viewModel.toggleReady() },
-                    onClearError = { viewModel.clearError() }
-                )
-            }
+                is AppScreen.Suggesting -> {
+                    SuggestScreen(
+                        roomState = roomState,
+                        predictions = predictions,
+                        isSearching = isSearching,
+                        error = error,
+                        myUserId = myUserId,
+                        onSearchQueryChanged = { viewModel.onSearchQueryChanged(it) },
+                        onPredictionSelected = { viewModel.onPredictionSelected(it) },
+                        onStartSwiping = { viewModel.startSwiping() },
+                        onToggleReady = { viewModel.toggleReady() },
+                        onClearError = { viewModel.clearError() }
+                    )
+                }
 
-            is AppScreen.Swiping -> {
-                SwipeScreen(
-                    venues = venues,
-                    currentIndex = currentIndex,
-                    roomState = roomState,
-                    onSwipe = { venueId, liked -> viewModel.onSwipe(venueId, liked) }
-                )
-            }
+                is AppScreen.Swiping -> {
+                    SwipeScreen(
+                        venues = venues,
+                        currentIndex = currentIndex,
+                        roomState = roomState,
+                        onSwipe = { venueId, liked -> viewModel.onSwipe(venueId, liked) }
+                    )
+                }
 
-            is AppScreen.SuddenDeath -> {
-                SuddenDeathScreen(
-                    venues = venues,
-                    currentIndex = currentIndex,
-                    round = currentScreen.round,
-                    roomState = roomState,
-                    onSwipe = { venueId, liked -> viewModel.onSwipe(venueId, liked) }
-                )
-            }
+                is AppScreen.SuddenDeath -> {
+                    SuddenDeathScreen(
+                        venues = venues,
+                        currentIndex = currentIndex,
+                        round = currentScreen.round,
+                        roomState = roomState,
+                        onSwipe = { venueId, liked -> viewModel.onSwipe(venueId, liked) }
+                    )
+                }
 
-            is AppScreen.Match -> {
-                MatchScreen(
-                    venue = currentScreen.venue,
-                    random = currentScreen.random,
-                    onBackToLobby = { viewModel.returnToLobby() }
-                )
+                is AppScreen.Match -> {
+                    MatchScreen(
+                        venue = currentScreen.venue,
+                        random = currentScreen.random,
+                        onBackToLobby = { viewModel.returnToLobby() }
+                    )
+                }
             }
         }
     }

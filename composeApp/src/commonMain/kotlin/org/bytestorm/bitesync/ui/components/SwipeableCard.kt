@@ -58,6 +58,7 @@ fun SwipeableCardStack(
     venues: List<Venue>,
     currentIndex: Int,
     onSwipe: (venueId: String, liked: Boolean) -> Unit,
+    onSwipeProgress: (Float) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -72,7 +73,8 @@ fun SwipeableCardStack(
                     cardIndex = currentIndex + stackIndex,
                     isTop = stackIndex == 0,
                     stackOffset = stackIndex,
-                    onSwiped = { liked -> onSwipe(venue.id, liked) }
+                    onSwiped = { liked -> onSwipe(venue.id, liked) },
+                    onDragProgress = if (stackIndex == 0) onSwipeProgress else { _ -> }
                 )
             }
         }
@@ -95,12 +97,17 @@ private fun SwipeableCard(
     cardIndex: Int,
     isTop: Boolean,
     stackOffset: Int,
-    onSwiped: (liked: Boolean) -> Unit
+    onSwiped: (liked: Boolean) -> Unit,
+    onDragProgress: (Float) -> Unit = {}
 ) {
     val offsetX = remember { Animatable(0f) }
     val offsetY = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     val swipeThreshold = 300f
+
+    if (isTop) {
+        onDragProgress((offsetX.value / swipeThreshold).coerceIn(-1f, 1f))
+    }
     val gradientColors = cardGradients[cardIndex % cardGradients.size]
 
     Card(

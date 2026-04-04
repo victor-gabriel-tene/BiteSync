@@ -6,18 +6,24 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,7 +48,44 @@ fun SwipeScreen(
         colors = listOf(Color(0xFF1a1a2e), Color(0xFF16213e))
     )
 
+    var swipeProgress by remember { mutableFloatStateOf(0f) }
+
     Box(modifier = modifier.fillMaxSize().background(gradient)) {
+        // Red glow on left edge (nope)
+        if (swipeProgress < -0.05f) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .fillMaxHeight()
+                    .width(80.dp)
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                Color(0xFFF44336).copy(alpha = (-swipeProgress).coerceIn(0f, 0.5f)),
+                                Color.Transparent
+                            )
+                        )
+                    )
+            )
+        }
+        // Green glow on right edge (like)
+        if (swipeProgress > 0.05f) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .width(80.dp)
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color(0xFF4CAF50).copy(alpha = swipeProgress.coerceIn(0f, 0.5f))
+                            )
+                        )
+                    )
+            )
+        }
+
         Column(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
             // Header
             Row(
@@ -54,7 +97,7 @@ fun SwipeScreen(
                     Text("Swiping", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     if (roomState != null) {
                         Text(
-                            "Room: ${roomState.pin} \u00B7 ${roomState.users.size} players",
+                            "Room: ${roomState.pin} \u00B7 ${roomState.users.size} users",
                             color = Color.White.copy(alpha = 0.6f),
                             fontSize = 13.sp
                         )
@@ -100,7 +143,11 @@ fun SwipeScreen(
             SwipeableCardStack(
                 venues = venues,
                 currentIndex = currentIndex,
-                onSwipe = onSwipe,
+                onSwipe = { id, liked ->
+                    swipeProgress = 0f
+                    onSwipe(id, liked)
+                },
+                onSwipeProgress = { swipeProgress = it },
                 modifier = Modifier.weight(1f)
             )
 
