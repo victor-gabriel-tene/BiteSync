@@ -80,7 +80,7 @@ fun MatchScreen(
 
             Text(
                 strings.itsAMatch,
-                fontSize = 36.sp,
+                fontSize = 30.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
                 modifier = Modifier.fillMaxWidth().scale(scale),
