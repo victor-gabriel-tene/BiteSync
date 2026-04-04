@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.bytestorm.bitesync.model.RoomState
+import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
 
 @Composable
 fun LobbyScreen(
@@ -59,10 +60,7 @@ fun LobbyScreen(
     var userName by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
     var isJoining by remember { mutableStateOf(false) }
-
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFFFF6B6B), Color(0xFFFF8E53))
-    )
+    val gradient = BiteSyncTheme.gradients.main
 
     Box(
         modifier = modifier.fillMaxSize().background(gradient),
@@ -122,7 +120,7 @@ private fun SegmentedControl(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF1F0ED))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(3.dp)
     ) {
         Row {
@@ -135,7 +133,7 @@ private fun SegmentedControl(
                         .then(
                             if (selected) Modifier
                                 .shadow(2.dp, RoundedCornerShape(10.dp))
-                                .background(Color.White)
+                                .background(MaterialTheme.colorScheme.surface)
                             else Modifier
                         )
                         .clickable { onToggle(joinMode) }
@@ -146,7 +144,7 @@ private fun SegmentedControl(
                         text = if (joinMode) "Join Room" else "Create Room",
                         fontSize = 13.sp,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (selected) Color(0xFFFF6B6B) else Color.Gray
+                        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
                 }
             }
@@ -170,7 +168,7 @@ private fun CreateOrJoinCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(24.dp),
@@ -216,12 +214,12 @@ private fun CreateOrJoinCard(
                 enabled = userName.isNotBlank() && !isConnecting && (!isJoining || pin.length == 4),
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B6B))
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 if (isConnecting) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
                 } else {
@@ -244,19 +242,19 @@ private fun WaitingRoomCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Room PIN", style = MaterialTheme.typography.labelLarge, color = Color.Gray)
+            Text("Room PIN", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
             Text(
                 roomState.pin,
                 fontSize = 48.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFFFF6B6B),
+                color = MaterialTheme.colorScheme.primary,
                 letterSpacing = 12.sp
             )
 
@@ -281,7 +279,7 @@ private fun WaitingRoomCard(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFFF8E53)),
+                                .background(MaterialTheme.colorScheme.secondary),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -309,7 +307,7 @@ private fun WaitingRoomCard(
                     ) {
                         Text(
                             "+$extraCount",
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
@@ -322,7 +320,7 @@ private fun WaitingRoomCard(
                     onClick = onStartSuggesting,
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B6B))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("Pick Restaurants!", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
@@ -330,12 +328,12 @@ private fun WaitingRoomCard(
                 Text(
                     "Waiting for more players...",
                     textAlign = TextAlign.Center,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 CircularProgressIndicator(
                     modifier = Modifier.size(32.dp),
-                    color = Color(0xFFFF6B6B),
+                    color = MaterialTheme.colorScheme.primary,
                     strokeWidth = 2.dp
                 )
             }

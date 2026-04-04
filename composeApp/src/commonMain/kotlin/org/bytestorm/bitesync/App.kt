@@ -22,6 +22,7 @@ import org.bytestorm.bitesync.ui.screen.MatchScreen
 import org.bytestorm.bitesync.ui.screen.SuddenDeathScreen
 import org.bytestorm.bitesync.ui.screen.SuggestScreen
 import org.bytestorm.bitesync.ui.screen.SwipeScreen
+import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
 import org.bytestorm.bitesync.viewmodel.AppScreen
 import org.bytestorm.bitesync.viewmodel.BiteSyncViewModel
 
@@ -30,7 +31,7 @@ fun App(
     serverDiscovery: ServerDiscovery,
     locationTracker: LocationTracker? = null
 ) {
-    MaterialTheme {
+    BiteSyncTheme {
         val viewModel = viewModel { BiteSyncViewModel(serverDiscovery, locationTracker) }
 
         val screen by viewModel.screen.collectAsState()

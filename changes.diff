@@ -1,0 +1,402 @@
+diff --git a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/App.kt b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/App.kt
+index e941396..0a2be80 100644
+--- a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/App.kt
++++ b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/App.kt
+@@ -22,6 +22,7 @@ import org.bytestorm.bitesync.ui.screen.MatchScreen
+ import org.bytestorm.bitesync.ui.screen.SuddenDeathScreen
+ import org.bytestorm.bitesync.ui.screen.SuggestScreen
+ import org.bytestorm.bitesync.ui.screen.SwipeScreen
++import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
+ import org.bytestorm.bitesync.viewmodel.AppScreen
+ import org.bytestorm.bitesync.viewmodel.BiteSyncViewModel
+ 
+@@ -30,7 +31,7 @@ fun App(
+     serverDiscovery: ServerDiscovery,
+     locationTracker: LocationTracker? = null
+ ) {
+-    MaterialTheme {
++    BiteSyncTheme {
+         val viewModel = viewModel { BiteSyncViewModel(serverDiscovery, locationTracker) }
+ 
+         val screen by viewModel.screen.collectAsState()
+diff --git a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/components/SwipeableCard.kt b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/components/SwipeableCard.kt
+index 20f3960..0cf0525 100644
+--- a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/components/SwipeableCard.kt
++++ b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/components/SwipeableCard.kt
+@@ -1,6 +1,8 @@
+ package org.bytestorm.bitesync.ui.components
+ 
+ import androidx.compose.animation.core.Animatable
++import androidx.compose.animation.core.animateDpAsState
++import androidx.compose.animation.core.animateFloatAsState
+ import androidx.compose.animation.core.spring
+ import androidx.compose.foundation.background
+ import androidx.compose.foundation.gestures.detectDragGestures
+@@ -20,6 +22,7 @@ import androidx.compose.material3.CircularProgressIndicator
+ import androidx.compose.material3.Surface
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
++import androidx.compose.runtime.getValue
+ import androidx.compose.runtime.key
+ import androidx.compose.runtime.remember
+ import androidx.compose.runtime.rememberCoroutineScope
+@@ -109,6 +112,14 @@ private fun SwipeableCard(
+         onDragProgress((offsetX.value / swipeThreshold).coerceIn(-1f, 1f))
+     }
+     val gradientColors = cardGradients[cardIndex % cardGradients.size]
++    val animatedStackOffset by animateFloatAsState(
++        targetValue = stackOffset.toFloat(),
++        animationSpec = spring(stiffness = 300f)
++    )
++    val animatedElevation by animateDpAsState(
++        targetValue = (8 - stackOffset * 2).coerceAtLeast(0).dp,
++        animationSpec = spring()
++    )
+ 
+     Card(
+         modifier = Modifier
+@@ -116,11 +127,11 @@ private fun SwipeableCard(
+             .fillMaxHeight(0.72f)
+             .graphicsLayer {
+                 translationX = offsetX.value
+-                translationY = offsetY.value + (stackOffset * 20f)
+-                scaleX = 1f - (stackOffset * 0.05f)
+-                scaleY = 1f - (stackOffset * 0.05f)
++                translationY = offsetY.value + (animatedStackOffset * 20f)
++                scaleX = 1f - (animatedStackOffset * 0.05f)
++                scaleY = 1f - (animatedStackOffset * 0.05f)
+                 rotationZ = if (isTop) (offsetX.value / 50f).coerceIn(-15f, 15f) else 0f
+-                alpha = if (stackOffset >= 3) 0f else 1f - (stackOffset * 0.1f)
++                alpha = if (animatedStackOffset >= 3f) 0f else 1f - (animatedStackOffset * 0.1f)
+             }
+             .then(
+                 if (isTop) {
+@@ -152,7 +163,7 @@ private fun SwipeableCard(
+             ),
+         shape = RoundedCornerShape(24.dp),
+         elevation = CardDefaults.cardElevation(
+-            defaultElevation = (8 - stackOffset * 2).coerceAtLeast(0).dp
++            defaultElevation = animatedElevation
+         )
+     ) {
+         Box(modifier = Modifier.fillMaxSize()) {
+diff --git a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/LobbyScreen.kt b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/LobbyScreen.kt
+index ec486e9..949169e 100644
+--- a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/LobbyScreen.kt
++++ b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/LobbyScreen.kt
+@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
+ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.unit.sp
+ import org.bytestorm.bitesync.model.RoomState
++import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
+ 
+ @Composable
+ fun LobbyScreen(
+@@ -59,10 +60,7 @@ fun LobbyScreen(
+     var userName by remember { mutableStateOf("") }
+     var pin by remember { mutableStateOf("") }
+     var isJoining by remember { mutableStateOf(false) }
+-
+-    val gradient = Brush.verticalGradient(
+-        colors = listOf(Color(0xFFFF6B6B), Color(0xFFFF8E53))
+-    )
++    val gradient = BiteSyncTheme.gradients.main
+ 
+     Box(
+         modifier = modifier.fillMaxSize().background(gradient),
+@@ -122,7 +120,7 @@ private fun SegmentedControl(
+         modifier = Modifier
+             .fillMaxWidth()
+             .clip(RoundedCornerShape(12.dp))
+-            .background(Color(0xFFF1F0ED))
++            .background(MaterialTheme.colorScheme.surfaceVariant)
+             .padding(3.dp)
+     ) {
+         Row {
+@@ -135,7 +133,7 @@ private fun SegmentedControl(
+                         .then(
+                             if (selected) Modifier
+                                 .shadow(2.dp, RoundedCornerShape(10.dp))
+-                                .background(Color.White)
++                                .background(MaterialTheme.colorScheme.surface)
+                             else Modifier
+                         )
+                         .clickable { onToggle(joinMode) }
+@@ -146,7 +144,7 @@ private fun SegmentedControl(
+                         text = if (joinMode) "Join Room" else "Create Room",
+                         fontSize = 13.sp,
+                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+-                        color = if (selected) Color(0xFFFF6B6B) else Color.Gray
++                        color = if (selected) MaterialTheme.colorScheme.primary else Color.Gray
+                     )
+                 }
+             }
+@@ -170,7 +168,7 @@ private fun CreateOrJoinCard(
+     Card(
+         modifier = Modifier.fillMaxWidth(),
+         shape = RoundedCornerShape(24.dp),
+-        colors = CardDefaults.cardColors(containerColor = Color.White)
++        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+     ) {
+         Column(
+             modifier = Modifier.padding(24.dp),
+@@ -244,7 +242,7 @@ private fun WaitingRoomCard(
+     Card(
+         modifier = Modifier.fillMaxWidth(),
+         shape = RoundedCornerShape(24.dp),
+-        colors = CardDefaults.cardColors(containerColor = Color.White)
++        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+     ) {
+         Column(
+             modifier = Modifier.padding(24.dp),
+diff --git a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/MatchScreen.kt b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/MatchScreen.kt
+index 77995f1..f6e126a 100644
+--- a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/MatchScreen.kt
++++ b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/MatchScreen.kt
+@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.unit.sp
+ import org.bytestorm.bitesync.model.Venue
+ import org.bytestorm.bitesync.ui.components.ConfettiEffect
++import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
++import androidx.compose.material3.MaterialTheme
+ 
+ @Composable
+ fun MatchScreen(
+@@ -59,9 +61,7 @@ fun MatchScreen(
+         )
+     )
+ 
+-    val gradient = Brush.verticalGradient(
+-        colors = listOf(Color(0xFFFF6B6B), Color(0xFFFF8E53), Color(0xFFFFD93D))
+-    )
++    val gradient = BiteSyncTheme.gradients.main
+ 
+     Box(modifier = modifier.fillMaxSize().background(gradient)) {
+         ConfettiEffect(modifier = Modifier.fillMaxSize())
+@@ -93,7 +93,7 @@ fun MatchScreen(
+             Card(
+                 modifier = Modifier.fillMaxWidth(),
+                 shape = RoundedCornerShape(24.dp),
+-                colors = CardDefaults.cardColors(containerColor = Color.White)
++                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+             ) {
+                 Column(
+                     modifier = Modifier.padding(24.dp),
+@@ -165,11 +165,11 @@ fun MatchScreen(
+                     },
+                     modifier = Modifier.weight(1f).height(52.dp),
+                     shape = RoundedCornerShape(12.dp),
+-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
++                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface)
+                 ) {
+                     Text(
+                         "Open Maps",
+-                        color = Color(0xFFFF6B6B),
++                        color = MaterialTheme.colorScheme.primary,
+                         fontWeight = FontWeight.Bold,
+                         fontSize = 15.sp
+                     )
+diff --git a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SuddenDeathScreen.kt b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SuddenDeathScreen.kt
+index 669126b..dc647db 100644
+--- a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SuddenDeathScreen.kt
++++ b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SuddenDeathScreen.kt
+@@ -48,6 +48,7 @@ import kotlinx.coroutines.delay
+ import org.bytestorm.bitesync.model.RoomState
+ import org.bytestorm.bitesync.model.Venue
+ import org.bytestorm.bitesync.ui.components.SwipeableCardStack
++import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
+ 
+ @Composable
+ fun SuddenDeathScreen(
+@@ -99,9 +100,7 @@ private fun SuddenDeathSplash(round: Int, venueCount: Int) {
+         )
+     )
+ 
+-    val gradient = Brush.verticalGradient(
+-        colors = listOf(Color(0xFF1a0000), Color(0xFF8B0000), Color(0xFF1a0000))
+-    )
++    val gradient = BiteSyncTheme.gradients.suddenDeath
+ 
+     Box(
+         modifier = Modifier.fillMaxSize().background(gradient),
+@@ -175,9 +174,7 @@ private fun SuddenDeathSwipeContent(
+     roomState: RoomState?,
+     onSwipe: (venueId: String, liked: Boolean) -> Unit
+ ) {
+-    val gradient = Brush.verticalGradient(
+-        colors = listOf(Color(0xFF2a0a0a), Color(0xFF1a1a2e))
+-    )
++    val gradient = BiteSyncTheme.gradients.suddenDeath
+ 
+     Box(modifier = Modifier.fillMaxSize().background(gradient)) {
+         Column(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
+@@ -255,48 +252,6 @@ private fun SuddenDeathSwipeContent(
+                 onSwipe = onSwipe,
+                 modifier = Modifier.weight(1f)
+             )
+-
+-            // Action buttons
+-            Row(
+-                modifier = Modifier
+-                    .fillMaxWidth()
+-                    .padding(horizontal = 40.dp, vertical = 20.dp),
+-                horizontalArrangement = Arrangement.SpaceEvenly,
+-                verticalAlignment = Alignment.CenterVertically
+-            ) {
+-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+-                    Box(
+-                        modifier = Modifier
+-                            .size(56.dp)
+-                            .clip(CircleShape)
+-                            .background(Color(0xFFF44336).copy(alpha = 0.15f)),
+-                        contentAlignment = Alignment.Center
+-                    ) {
+-                        Text("\u2715", fontSize = 22.sp, color = Color(0xFFF44336))
+-                    }
+-                    Text(
+-                        "Nope", color = Color(0xFFF44336), fontSize = 11.sp,
+-                        fontWeight = FontWeight.Bold,
+-                        modifier = Modifier.padding(top = 4.dp)
+-                    )
+-                }
+-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+-                    Box(
+-                        modifier = Modifier
+-                            .size(56.dp)
+-                            .clip(CircleShape)
+-                            .background(Color(0xFF4CAF50).copy(alpha = 0.15f)),
+-                        contentAlignment = Alignment.Center
+-                    ) {
+-                        Text("\u2665", fontSize = 22.sp, color = Color(0xFF4CAF50))
+-                    }
+-                    Text(
+-                        "Like", color = Color(0xFF4CAF50), fontSize = 11.sp,
+-                        fontWeight = FontWeight.Bold,
+-                        modifier = Modifier.padding(top = 4.dp)
+-                    )
+-                }
+-            }
+         }
+     }
+ }
+diff --git a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SuggestScreen.kt b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SuggestScreen.kt
+index d0892bf..343487f 100644
+--- a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SuggestScreen.kt
++++ b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SuggestScreen.kt
+@@ -53,6 +53,7 @@ import coil3.compose.AsyncImage
+ import org.bytestorm.bitesync.model.PlacePrediction
+ import org.bytestorm.bitesync.model.RoomState
+ import org.bytestorm.bitesync.model.Venue
++import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
+ 
+ @Composable
+ fun SuggestScreen(
+@@ -69,10 +70,7 @@ fun SuggestScreen(
+     modifier: Modifier = Modifier
+ ) {
+     var searchQuery by remember { mutableStateOf("") }
+-
+-    val gradient = Brush.verticalGradient(
+-        colors = listOf(Color(0xFF1a1a2e), Color(0xFF16213e))
+-    )
++    val gradient = BiteSyncTheme.gradients.main
+ 
+     Box(modifier = modifier.fillMaxSize().background(gradient)) {
+         Column(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
+@@ -112,8 +110,8 @@ fun SuggestScreen(
+                     colors = OutlinedTextFieldDefaults.colors(
+                         focusedTextColor = Color.White,
+                         unfocusedTextColor = Color.White,
+-                        cursorColor = Color(0xFFFF6B6B),
+-                        focusedBorderColor = Color(0xFFFF6B6B),
++                        cursorColor = MaterialTheme.colorScheme.primary,
++                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                         unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                         focusedContainerColor = Color.White.copy(alpha = 0.08f),
+                         unfocusedContainerColor = Color.White.copy(alpha = 0.05f)
+@@ -122,7 +120,7 @@ fun SuggestScreen(
+                         if (isSearching) {
+                             CircularProgressIndicator(
+                                 modifier = Modifier.size(20.dp),
+-                                color = Color(0xFFFF6B6B),
++                                color = MaterialTheme.colorScheme.primary,
+                                 strokeWidth = 2.dp
+                             )
+                         }
+@@ -141,7 +139,7 @@ fun SuggestScreen(
+                         .fillMaxWidth()
+                         .padding(horizontal = 20.dp),
+                     shape = RoundedCornerShape(16.dp),
+-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2a4e)),
++                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                 ) {
+                     Column {
+@@ -167,7 +165,7 @@ fun SuggestScreen(
+             if (error != null) {
+                 Text(
+                     error,
+-                    color = Color(0xFFFF6B6B),
++                    color = MaterialTheme.colorScheme.primary,
+                     fontSize = 13.sp,
+                     modifier = Modifier.padding(horizontal = 20.dp)
+                 )
+@@ -292,7 +290,7 @@ fun SuggestScreen(
+                         .height(52.dp),
+                     shape = RoundedCornerShape(16.dp),
+                     colors = ButtonDefaults.buttonColors(
+-                        containerColor = if (myIsReady) Color(0xFF4CAF50) else Color(0xFFFF6B6B)
++                        containerColor = if (myIsReady) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary
+                     )
+                 ) {
+                     Text(
+@@ -340,7 +338,7 @@ private fun PredictionItem(
+         Column(modifier = Modifier.weight(1f)) {
+             Text(
+                 prediction.mainText,
+-                color = Color.White,
++                color = MaterialTheme.colorScheme.onSurface,
+                 fontWeight = FontWeight.SemiBold,
+                 fontSize = 15.sp,
+                 maxLines = 1,
+@@ -349,7 +347,7 @@ private fun PredictionItem(
+             if (prediction.secondaryText.isNotEmpty()) {
+                 Text(
+                     prediction.secondaryText,
+-                    color = Color.White.copy(alpha = 0.5f),
++                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                     fontSize = 12.sp,
+                     maxLines = 1,
+                     overflow = TextOverflow.Ellipsis
+diff --git a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SwipeScreen.kt b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SwipeScreen.kt
+index 2e1f49f..1e7e7cb 100644
+--- a/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SwipeScreen.kt
++++ b/composeApp/src/commonMain/kotlin/org/bytestorm/bitesync/ui/screen/SwipeScreen.kt
+@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.unit.sp
+ import org.bytestorm.bitesync.model.RoomState
++import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
+ import org.bytestorm.bitesync.model.Venue
+ import org.bytestorm.bitesync.ui.components.SwipeableCardStack
+ 
+@@ -44,9 +45,7 @@ fun SwipeScreen(
+     onSwipe: (venueId: String, liked: Boolean) -> Unit,
+     modifier: Modifier = Modifier
+ ) {
+-    val gradient = Brush.verticalGradient(
+-        colors = listOf(Color(0xFF1a1a2e), Color(0xFF16213e))
+-    )
++    val gradient = BiteSyncTheme.gradients.main
+ 
+     var swipeProgress by remember { mutableFloatStateOf(0f) }
+ 
+@@ -133,7 +132,7 @@ fun SwipeScreen(
+                             .height(3.dp)
+                             .background(
+                                 Brush.horizontalGradient(
+-                                    listOf(Color(0xFFFF6B6B), Color(0xFFFF8E53))
++                                    listOf(Color.White, Color.White.copy(alpha = 0.8f))
+                                 )
+                             )
+                     )

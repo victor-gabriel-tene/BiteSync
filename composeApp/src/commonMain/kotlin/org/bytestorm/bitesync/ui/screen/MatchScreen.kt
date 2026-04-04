@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.bytestorm.bitesync.model.Venue
 import org.bytestorm.bitesync.ui.components.ConfettiEffect
+import org.bytestorm.bitesync.ui.theme.BiteSyncTheme
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun MatchScreen(
@@ -59,9 +61,7 @@ fun MatchScreen(
         )
     )
 
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFFFF6B6B), Color(0xFFFF8E53), Color(0xFFFFD93D))
-    )
+    val gradient = BiteSyncTheme.gradients.main
 
     Box(modifier = modifier.fillMaxSize().background(gradient)) {
         ConfettiEffect(modifier = Modifier.fillMaxSize())
@@ -93,7 +93,7 @@ fun MatchScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
@@ -104,7 +104,7 @@ fun MatchScreen(
                         venue.name,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF1a1a2e),
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
                     )
 
@@ -134,7 +134,7 @@ fun MatchScreen(
                     if (venue.categories.isNotEmpty()) {
                         Text(
                             venue.categories.joinToString(" \u00B7 ") { it.replace("_", " ") },
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontSize = 14.sp
                         )
                     }
@@ -142,7 +142,7 @@ fun MatchScreen(
                     if (venue.address.isNotEmpty()) {
                         Text(
                             venue.address,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontSize = 14.sp,
                             textAlign = TextAlign.Center
                         )
@@ -165,11 +165,11 @@ fun MatchScreen(
                     },
                     modifier = Modifier.weight(1f).height(52.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Text(
                         "Open Maps",
-                        color = Color(0xFFFF6B6B),
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp
                     )

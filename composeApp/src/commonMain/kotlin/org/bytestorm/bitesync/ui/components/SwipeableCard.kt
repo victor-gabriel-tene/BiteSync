@@ -1,6 +1,8 @@
 package org.bytestorm.bitesync.ui.components
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -17,9 +19,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -84,8 +88,8 @@ fun SwipeableCardStack(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("No more venues!", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Text("Waiting for a match...", fontSize = 16.sp, color = Color.White.copy(alpha = 0.7f))
+                Text("No more venues!", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+                Text("Waiting for a match...", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f))
             }
         }
     }
@@ -109,6 +113,14 @@ private fun SwipeableCard(
         onDragProgress((offsetX.value / swipeThreshold).coerceIn(-1f, 1f))
     }
     val gradientColors = cardGradients[cardIndex % cardGradients.size]
+    val animatedStackOffset by animateFloatAsState(
+        targetValue = stackOffset.toFloat(),
+        animationSpec = spring(stiffness = 300f)
+    )
+    val animatedElevation by animateDpAsState(
+        targetValue = (8 - stackOffset * 2).coerceAtLeast(0).dp,
+        animationSpec = spring()
+    )
 
     Card(
         modifier = Modifier
@@ -116,11 +128,11 @@ private fun SwipeableCard(
             .fillMaxHeight(0.72f)
             .graphicsLayer {
                 translationX = offsetX.value
-                translationY = offsetY.value + (stackOffset * 20f)
-                scaleX = 1f - (stackOffset * 0.05f)
-                scaleY = 1f - (stackOffset * 0.05f)
+                translationY = offsetY.value + (animatedStackOffset * 20f)
+                scaleX = 1f - (animatedStackOffset * 0.05f)
+                scaleY = 1f - (animatedStackOffset * 0.05f)
                 rotationZ = if (isTop) (offsetX.value / 50f).coerceIn(-15f, 15f) else 0f
-                alpha = if (stackOffset >= 3) 0f else 1f - (stackOffset * 0.1f)
+                alpha = if (animatedStackOffset >= 3f) 0f else 1f - (animatedStackOffset * 0.1f)
             }
             .then(
                 if (isTop) {
@@ -152,7 +164,7 @@ private fun SwipeableCard(
             ),
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = (8 - stackOffset * 2).coerceAtLeast(0).dp
+            defaultElevation = animatedElevation
         )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
