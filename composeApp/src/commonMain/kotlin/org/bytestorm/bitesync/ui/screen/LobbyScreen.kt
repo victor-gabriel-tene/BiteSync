@@ -75,12 +75,12 @@ fun LobbyScreen(
                 text = "BiteSync",
                 fontSize = 42.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
             Text(
                 text = "Swipe together. Eat together.",
                 fontSize = 16.sp,
-                color = Color.White.copy(alpha = 0.8f)
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -284,7 +284,7 @@ private fun WaitingRoomCard(
                         ) {
                             Text(
                                 user.displayName.take(1).uppercase(),
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onSecondary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
                             )

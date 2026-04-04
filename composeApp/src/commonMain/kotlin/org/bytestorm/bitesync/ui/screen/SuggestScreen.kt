@@ -153,7 +153,7 @@ fun SuggestScreen(
                                 }
                             )
                             if (index < predictions.lastIndex) {
-                                HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                             }
                         }
                     }
@@ -363,7 +363,7 @@ private fun SubmittedVenueItem(venue: Venue) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.08f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier.padding(14.dp),

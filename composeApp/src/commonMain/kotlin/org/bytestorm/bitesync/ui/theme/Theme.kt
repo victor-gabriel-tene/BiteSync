@@ -51,7 +51,7 @@ fun BiteSyncTheme(
         )
     } else {
         BiteSyncGradients(
-            main = Brush.verticalGradient(listOf(BrightRed, Orange)),
+            main = Brush.verticalGradient(listOf(Color.White, Slate50)),
             suddenDeath = Brush.verticalGradient(listOf(BrightRed, DarkRed))
         )
     }
