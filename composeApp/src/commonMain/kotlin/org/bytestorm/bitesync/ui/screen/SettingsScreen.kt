@@ -69,17 +69,17 @@ fun SettingsScreen(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f))
+                        .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
                         .clickable(onClick = onBack),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("\u2190", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("\u2190", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
                 Text(
                     strings.settings,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 

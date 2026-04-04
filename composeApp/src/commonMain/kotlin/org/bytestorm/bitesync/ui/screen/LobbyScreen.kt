@@ -75,11 +75,11 @@ fun LobbyScreen(
                 .padding(16.dp)
                 .size(42.dp)
                 .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.2f))
+                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
                 .clickable(onClick = onOpenSettings),
             contentAlignment = Alignment.Center
         ) {
-            Text("\u2699\uFE0F", fontSize = 20.sp)
+            Text("\u2699\uFE0F", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
         }
 
         Column(
