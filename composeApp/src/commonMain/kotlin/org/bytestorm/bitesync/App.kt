@@ -173,6 +173,7 @@ fun App(
                         FinalPlanScreen(
                             venue = currentScreen.venue,
                             attendees = currentScreen.attendees,
+                            myUserId = myUserId,
                             onBackToLobby = { viewModel.returnToLobby() }
                         )
                     }

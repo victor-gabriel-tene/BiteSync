@@ -47,6 +47,7 @@ fun FinalPlanScreen(
     venue: Venue,
     attendees: List<Attendee>,
     onBackToLobby: () -> Unit,
+    myUserId: String? = null,
     modifier: Modifier = Modifier
 ) {
     val strings = LocalStrings.current
@@ -54,6 +55,7 @@ fun FinalPlanScreen(
     val gradient = BiteSyncTheme.gradients.main
     val coming = attendees.filter { it.attending }
     val notComing = attendees.filter { !it.attending }
+    val isMeAttending = attendees.find { it.user.id == myUserId }?.attending == true
 
     Box(modifier = modifier.fillMaxSize().background(gradient)) {
         Column(
@@ -174,22 +176,24 @@ fun FinalPlanScreen(
             }
 
             // Action buttons
-            Button(
-                onClick = {
-                    val query = (venue.name + " " + venue.address)
-                        .replace(" ", "+")
-                        .replace("&", "%26")
-                    uriHandler.openUri("https://www.google.com/maps/search/?api=1&query=$query")
-                },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-            ) {
-                Text(
-                    "\uD83D\uDDFA\uFE0F  ${strings.letsGo}",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
+            if (isMeAttending) {
+                Button(
+                    onClick = {
+                        val query = (venue.name + " " + venue.address)
+                            .replace(" ", "+")
+                            .replace("&", "%26")
+                        uriHandler.openUri("https://www.google.com/maps/search/?api=1&query=$query")
+                    },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                ) {
+                    Text(
+                        "\uD83D\uDDFA\uFE0F  ${strings.letsGo}",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
             }
 
             OutlinedButton(
