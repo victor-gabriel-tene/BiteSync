@@ -63,6 +63,14 @@ fun Application.configureServer() {
 
     routing {
 
+        // Health check / API key status
+        get("/api/status") {
+            call.respond(mapOf(
+                "server" to "running",
+                "googleApiKey" to if (venueService.isGoogleApiEnabled()) "configured" else "MISSING - using mock data"
+            ))
+        }
+
         // Google Places Autocomplete proxy
         get("/api/autocomplete") {
             val query = call.request.queryParameters["query"] ?: ""

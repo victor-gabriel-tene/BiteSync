@@ -1,22 +1,56 @@
 package org.bytestorm.bitesync.server.venue
 
-import io.github.cdimascio.dotenv.dotenv
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.*
 import org.bytestorm.bitesync.model.PlacePrediction
 import org.bytestorm.bitesync.model.Venue
 
 class VenueService {
-    private val dotenv = dotenv {
-        ignoreIfMissing = true
+    private val googleApiKey = loadApiKey().also {
+        if (it.isEmpty()) println("[VenueService] WARNING: No Google API key found. Using mock data.")
+        else println("[VenueService] Google API key loaded (${it.take(8)}...)")
     }
-    private val googleApiKey = System.getenv("GOOGLE_PLACES_API_KEY") ?: dotenv["GOOGLE_PLACES_API_KEY"] ?: ""
+
+    private fun loadApiKey(): String {
+        val fromEnv = System.getenv("GOOGLE_PLACES_API_KEY")
+        if (!fromEnv.isNullOrBlank()) return fromEnv.trim().removeSurrounding("\"")
+
+        val cwd = System.getProperty("user.dir") ?: "."
+        println("[VenueService] Looking for .env in working dir: $cwd")
+
+        val searchPaths = listOf(
+            java.io.File(cwd, ".env"),
+            java.io.File(cwd, "../.env"),
+            java.io.File(cwd, "../../.env")
+        )
+
+        for (envFile in searchPaths) {
+            if (envFile.exists()) {
+                println("[VenueService] Found .env at: ${envFile.absolutePath}")
+                val line = envFile.readLines().firstOrNull { it.startsWith("GOOGLE_PLACES_API_KEY=") }
+                if (line != null) {
+                    return line.substringAfter("=").trim().removeSurrounding("\"")
+                }
+            }
+        }
+
+        println("[VenueService] No .env file found in any of: ${searchPaths.map { it.absolutePath }}")
+        return ""
+    }
+
+    fun isGoogleApiEnabled(): Boolean = googleApiKey.isNotEmpty()
 
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -28,6 +62,7 @@ class VenueService {
 
     suspend fun autocomplete(query: String, lat: Double?, lng: Double?): List<PlacePrediction> {
         if (query.isBlank()) return emptyList()
+        println("[VenueService] Autocomplete request: query='$query', lat=$lat, lng=$lng, usingGoogle=${googleApiKey.isNotEmpty()}")
         return if (googleApiKey.isNotEmpty()) {
             googleAutocomplete(query, lat, lng)
         } else {
@@ -38,27 +73,49 @@ class VenueService {
     private suspend fun googleAutocomplete(
         query: String, lat: Double?, lng: Double?
     ): List<PlacePrediction> {
-        val response: JsonObject = client.get(
-            "https://maps.googleapis.com/maps/api/place/autocomplete/json"
-        ) {
-            parameter("input", query)
-            parameter("types", "restaurant")
-            parameter("key", googleApiKey)
+        val requestBody = buildJsonObject {
+            put("input", query)
+            put("includedPrimaryTypes", buildJsonArray { add("restaurant") })
             if (lat != null && lng != null) {
-                parameter("location", "$lat,$lng")
-                parameter("radius", 10000)
+                put("locationBias", buildJsonObject {
+                    put("circle", buildJsonObject {
+                        put("center", buildJsonObject {
+                            put("latitude", lat)
+                            put("longitude", lng)
+                        })
+                        put("radius", 10000.0)
+                    })
+                })
             }
-        }.body()
+        }
 
-        val predictions = response["predictions"]?.jsonArray ?: return emptyList()
-        return predictions.take(8).map { element ->
-            val pred = element.jsonObject
-            val structured = pred["structured_formatting"]?.jsonObject
+        val responseText = client.post("https://places.googleapis.com/v1/places:autocomplete") {
+            header("X-Goog-Api-Key", googleApiKey)
+            contentType(ContentType.Application.Json)
+            setBody(requestBody.toString())
+        }.bodyAsText()
+
+        val response = Json.parseToJsonElement(responseText).jsonObject
+        println("[VenueService] Google API response: ${responseText.take(200)}")
+
+        val error = response["error"]?.jsonObject
+        if (error != null) {
+            println("[VenueService] API error: ${error["message"]?.jsonPrimitive?.contentOrNull}")
+            return emptyList()
+        }
+
+        val suggestions = response["suggestions"]?.jsonArray ?: return emptyList()
+        return suggestions.take(8).mapNotNull { element ->
+            val prediction = element.jsonObject["placePrediction"]?.jsonObject ?: return@mapNotNull null
+            val placeId = prediction["placeId"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
+            val structuredFormat = prediction["structuredFormat"]?.jsonObject
+            val text = prediction["text"]?.jsonObject
+
             PlacePrediction(
-                placeId = pred["place_id"]?.jsonPrimitive?.contentOrNull ?: "",
-                description = pred["description"]?.jsonPrimitive?.contentOrNull ?: "",
-                mainText = structured?.get("main_text")?.jsonPrimitive?.contentOrNull ?: "",
-                secondaryText = structured?.get("secondary_text")?.jsonPrimitive?.contentOrNull ?: ""
+                placeId = placeId,
+                description = text?.get("text")?.jsonPrimitive?.contentOrNull ?: "",
+                mainText = structuredFormat?.get("mainText")?.jsonObject?.get("text")?.jsonPrimitive?.contentOrNull ?: "",
+                secondaryText = structuredFormat?.get("secondaryText")?.jsonObject?.get("text")?.jsonPrimitive?.contentOrNull ?: ""
             )
         }
     }
@@ -74,35 +131,50 @@ class VenueService {
     }
 
     private suspend fun googlePlaceDetails(placeId: String): Venue? {
-        val response: JsonObject = client.get(
-            "https://maps.googleapis.com/maps/api/place/details/json"
-        ) {
-            parameter("place_id", placeId)
-            parameter("fields", "place_id,name,rating,price_level,types,vicinity,photos,formatted_address")
-            parameter("key", googleApiKey)
-        }.body()
+        val fields = "id,displayName,rating,priceLevel,types,formattedAddress,photos"
 
-        val result = response["result"]?.jsonObject ?: return null
-        val photoRef = result["photos"]?.jsonArray
+        val responseText = client.get("https://places.googleapis.com/v1/places/$placeId") {
+            header("X-Goog-Api-Key", googleApiKey)
+            header("X-Goog-FieldMask", fields)
+        }.bodyAsText()
+
+        val result = Json.parseToJsonElement(responseText).jsonObject
+        println("[VenueService] Place details response: ${responseText.take(300)}")
+
+        val error = result["error"]?.jsonObject
+        if (error != null) {
+            println("[VenueService] Details API error: ${error["message"]?.jsonPrimitive?.contentOrNull}")
+            return null
+        }
+
+        val photoName = result["photos"]?.jsonArray
             ?.firstOrNull()?.jsonObject
-            ?.get("photo_reference")?.jsonPrimitive?.contentOrNull
-        val photoUrl = photoRef?.let {
-            "https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=$it&key=$googleApiKey"
+            ?.get("name")?.jsonPrimitive?.contentOrNull
+        val photoUrl = photoName?.let {
+            "https://places.googleapis.com/v1/$it/media?maxWidthPx=800&key=$googleApiKey"
+        }
+
+        val priceLevelStr = result["priceLevel"]?.jsonPrimitive?.contentOrNull
+        val priceLevel = when (priceLevelStr) {
+            "PRICE_LEVEL_FREE" -> 0
+            "PRICE_LEVEL_INEXPENSIVE" -> 1
+            "PRICE_LEVEL_MODERATE" -> 2
+            "PRICE_LEVEL_EXPENSIVE" -> 3
+            "PRICE_LEVEL_VERY_EXPENSIVE" -> 4
+            else -> null
         }
 
         return Venue(
-            id = result["place_id"]?.jsonPrimitive?.contentOrNull ?: placeId,
-            name = result["name"]?.jsonPrimitive?.contentOrNull ?: "Unknown",
+            id = result["id"]?.jsonPrimitive?.contentOrNull ?: placeId,
+            name = result["displayName"]?.jsonObject?.get("text")?.jsonPrimitive?.contentOrNull ?: "Unknown",
             imageUrl = photoUrl,
             rating = result["rating"]?.jsonPrimitive?.doubleOrNull,
-            priceLevel = result["price_level"]?.jsonPrimitive?.intOrNull,
+            priceLevel = priceLevel,
             categories = result["types"]?.jsonArray
                 ?.mapNotNull { it.jsonPrimitive.contentOrNull }
                 ?.filter { it != "point_of_interest" && it != "establishment" }
                 ?: emptyList(),
-            address = result["formatted_address"]?.jsonPrimitive?.contentOrNull
-                ?: result["vicinity"]?.jsonPrimitive?.contentOrNull
-                ?: ""
+            address = result["formattedAddress"]?.jsonPrimitive?.contentOrNull ?: ""
         )
     }
 
