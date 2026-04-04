@@ -24,8 +24,8 @@ sealed interface AppScreen {
     data class Match(val venue: Venue) : AppScreen
 }
 
-class BiteSyncViewModel : ViewModel() {
-    private val client = BiteSyncClient(SERVER_URL)
+class BiteSyncViewModel(serverUrl: String) : ViewModel() {
+    private val client = BiteSyncClient(serverUrl)
 
     // --- Navigation ---
     private val _screen = MutableStateFlow<AppScreen>(AppScreen.Lobby)
@@ -61,17 +61,33 @@ class BiteSyncViewModel : ViewModel() {
     // ======== Connection ========
 
     private fun connectAndExecute(action: suspend () -> Unit) {
+        if (_isConnecting.value) return
         _isConnecting.value = true
+        _error.value = null
         viewModelScope.launch {
             try {
-                launch {
-                    client.connectWebSocket { message -> handleServerMessage(message) }
+                // We use withTimeout to avoid hanging if the server is unreachable
+                kotlinx.coroutines.withTimeout(5000L) {
+                    val connectionJob = launch {
+                        try {
+                            client.connectWebSocket { message -> handleServerMessage(message) }
+                        } catch (e: Exception) {
+                            _error.value = "WebSocket error: ${e.message}"
+                        } finally {
+                            _isConnecting.value = false
+                        }
+                    }
+
+                    // Wait until connected becomes true
+                    client.connected.first { it }
+                    _isConnecting.value = false
+                    action()
                 }
-                client.connected.first { it }
+            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                _error.value = "Connection timeout. Is the server running?"
                 _isConnecting.value = false
-                action()
             } catch (e: Exception) {
-                _error.value = e.message ?: "Connection failed"
+                _error.value = "Connection failed: ${e.message}"
                 _isConnecting.value = false
             }
         }
@@ -157,6 +173,8 @@ class BiteSyncViewModel : ViewModel() {
         _venues.value = emptyList()
         _currentCardIndex.value = 0
         _predictions.value = emptyList()
+        _error.value = null
+        _isConnecting.value = false
     }
 
     // ======== Server message handler ========

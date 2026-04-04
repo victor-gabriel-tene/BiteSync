@@ -4,6 +4,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.bytestorm.bitesync.ui.screen.LobbyScreen
 import org.bytestorm.bitesync.ui.screen.MatchScreen
@@ -15,7 +18,8 @@ import org.bytestorm.bitesync.viewmodel.BiteSyncViewModel
 @Composable
 fun App() {
     MaterialTheme {
-        val viewModel = viewModel { BiteSyncViewModel() }
+        var serverIp by remember { mutableStateOf("10.0.2.2") }
+        val viewModel = viewModel(key = serverIp) { BiteSyncViewModel("http://$serverIp:8080") }
 
         val screen by viewModel.screen.collectAsState()
         val roomState by viewModel.roomState.collectAsState()
@@ -32,6 +36,8 @@ fun App() {
                     roomState = roomState,
                     isConnecting = isConnecting,
                     error = error,
+                    serverIp = serverIp,
+                    onServerIpChange = { serverIp = it },
                     onCreateRoom = { name -> viewModel.createRoom(name) },
                     onJoinRoom = { pin, name -> viewModel.joinRoom(pin, name) },
                     onStartSuggesting = { viewModel.startSuggesting() },
