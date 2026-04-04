@@ -47,8 +47,6 @@ fun LobbyScreen(
     roomState: RoomState?,
     isConnecting: Boolean,
     error: String?,
-    serverIp: String,
-    onServerIpChange: (String) -> Unit,
     onCreateRoom: (String) -> Unit,
     onJoinRoom: (String, String) -> Unit,
     onStartSuggesting: () -> Unit,
@@ -58,7 +56,6 @@ fun LobbyScreen(
     var userName by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
     var isJoining by remember { mutableStateOf(false) }
-    var showSettings by remember { mutableStateOf(false) }
 
     val gradient = Brush.verticalGradient(
         colors = listOf(Color(0xFFFF6B6B), Color(0xFFFF8E53))
@@ -100,10 +97,6 @@ fun LobbyScreen(
                     },
                     isConnecting = isConnecting,
                     error = error,
-                    serverIp = serverIp,
-                    onServerIpChange = onServerIpChange,
-                    showSettings = showSettings,
-                    onToggleSettings = { showSettings = !showSettings },
                     onCreateRoom = { onCreateRoom(userName) },
                     onJoinRoom = { onJoinRoom(pin, userName) }
                 )
@@ -168,10 +161,6 @@ private fun CreateOrJoinCard(
     onToggleJoining: () -> Unit,
     isConnecting: Boolean,
     error: String?,
-    serverIp: String,
-    onServerIpChange: (String) -> Unit,
-    showSettings: Boolean,
-    onToggleSettings: () -> Unit,
     onCreateRoom: () -> Unit,
     onJoinRoom: () -> Unit
 ) {
@@ -211,41 +200,12 @@ private fun CreateOrJoinCard(
                 )
             }
 
-            AnimatedVisibility(showSettings) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                    Text(
-                        "Server Settings",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.Gray
-                    )
-                    OutlinedTextField(
-                        value = serverIp,
-                        onValueChange = onServerIpChange,
-                        label = { Text("Server IP") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    Text(
-                        "Default is 10.0.2.2 for emulator. Use your PC's local IP for physical devices.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
-                }
-            }
-
             if (error != null) {
                 Text(
                     text = error,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
-                if (!showSettings) {
-                    TextButton(onClick = onToggleSettings) {
-                        Text("Need to change server IP?", fontSize = 12.sp)
-                    }
-                }
             }
 
             Button(
@@ -266,20 +226,6 @@ private fun CreateOrJoinCard(
                         if (isJoining) "Join Room" else "Create Room",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = onToggleSettings) {
-                    Text(
-                        if (showSettings) "Hide Settings" else "Settings",
-                        color = Color.Gray,
-                        fontSize = 12.sp
                     )
                 }
             }

@@ -24,8 +24,12 @@ import org.bytestorm.bitesync.model.ServerMessage
 import org.bytestorm.bitesync.model.User
 import org.bytestorm.bitesync.server.room.RoomManager
 import org.bytestorm.bitesync.server.venue.VenueService
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 import java.time.Duration
 import java.util.UUID
+import kotlin.concurrent.thread
 
 val appJson = Json {
     ignoreUnknownKeys = true
@@ -34,7 +38,28 @@ val appJson = Json {
 }
 
 fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
+    val port = 8080
+    
+    // UDP Broadcaster for auto-discovery
+    thread(isDaemon = true) {
+        try {
+            val socket = DatagramSocket()
+            socket.broadcast = true
+            val message = "BITESYNC_SERVER:$port".toByteArray()
+            val address = InetAddress.getByName("255.255.255.255")
+            val packet = DatagramPacket(message, message.size, address, 8888)
+            
+            println("Starting discovery broadcaster...")
+            while (true) {
+                socket.send(packet)
+                Thread.sleep(2000)
+            }
+        } catch (e: Exception) {
+            println("Discovery broadcaster failed: ${e.message}")
+        }
+    }
+
+    embeddedServer(Netty, port = port, host = "0.0.0.0") {
         configureServer()
     }.start(wait = true)
 }

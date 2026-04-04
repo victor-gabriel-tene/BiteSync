@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import org.bytestorm.bitesync.location.AndroidLocationTracker
+import org.bytestorm.bitesync.network.AndroidServerDiscovery
 
 class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
@@ -30,7 +31,10 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            App(locationTracker = AndroidLocationTracker(this))
+            App(
+                serverDiscovery = AndroidServerDiscovery(),
+                locationTracker = AndroidLocationTracker(this)
+            )
         }
     }
 }

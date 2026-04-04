@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.bytestorm.bitesync.location.LocationTracker
+import org.bytestorm.bitesync.network.ServerDiscovery
 import org.bytestorm.bitesync.ui.screen.LobbyScreen
 import org.bytestorm.bitesync.ui.screen.MatchScreen
 import org.bytestorm.bitesync.ui.screen.SuggestScreen
@@ -17,10 +18,12 @@ import org.bytestorm.bitesync.viewmodel.AppScreen
 import org.bytestorm.bitesync.viewmodel.BiteSyncViewModel
 
 @Composable
-fun App(locationTracker: LocationTracker? = null) {
+fun App(
+    serverDiscovery: ServerDiscovery,
+    locationTracker: LocationTracker? = null
+) {
     MaterialTheme {
-        var serverIp by remember { mutableStateOf("10.0.2.2") }
-        val viewModel = viewModel(key = serverIp) { BiteSyncViewModel("http://$serverIp:8080", locationTracker) }
+        val viewModel = viewModel { BiteSyncViewModel(serverDiscovery, locationTracker) }
 
         val screen by viewModel.screen.collectAsState()
         val roomState by viewModel.roomState.collectAsState()
@@ -37,8 +40,6 @@ fun App(locationTracker: LocationTracker? = null) {
                     roomState = roomState,
                     isConnecting = isConnecting,
                     error = error,
-                    serverIp = serverIp,
-                    onServerIpChange = { serverIp = it },
                     onCreateRoom = { name -> viewModel.createRoom(name) },
                     onJoinRoom = { pin, name -> viewModel.joinRoom(pin, name) },
                     onStartSuggesting = { viewModel.startSuggesting() },

@@ -17,6 +17,7 @@ import org.bytestorm.bitesync.model.RoomStatus
 import org.bytestorm.bitesync.model.ServerMessage
 import org.bytestorm.bitesync.model.Venue
 import org.bytestorm.bitesync.network.BiteSyncClient
+import org.bytestorm.bitesync.network.ServerDiscovery
 
 sealed interface AppScreen {
     data object Lobby : AppScreen
@@ -26,10 +27,21 @@ sealed interface AppScreen {
 }
 
 class BiteSyncViewModel(
-    serverUrl: String,
+    private val serverDiscovery: ServerDiscovery,
     private val locationTracker: LocationTracker? = null
 ) : ViewModel() {
-    private val client = BiteSyncClient(serverUrl)
+    private var client: BiteSyncClient? = null
+
+    init {
+        serverDiscovery.startDiscovery()
+        viewModelScope.launch {
+            serverDiscovery.discoveredServerUrl.collect { url ->
+                if (url != null && client == null) {
+                    client = BiteSyncClient(url)
+                }
+            }
+        }
+    }
 
     // --- Navigation ---
     private val _screen = MutableStateFlow<AppScreen>(AppScreen.Lobby)
@@ -65,6 +77,11 @@ class BiteSyncViewModel(
     // ======== Connection ========
 
     private fun connectAndExecute(action: suspend () -> Unit) {
+        val currentClient = client
+        if (currentClient == null) {
+            _error.value = "Searching for server..."
+            return
+        }
         if (_isConnecting.value) return
         _isConnecting.value = true
         _error.value = null
@@ -72,14 +89,14 @@ class BiteSyncViewModel(
             try {
                 viewModelScope.launch {
                     try {
-                        client.connectWebSocket { message -> handleServerMessage(message) }
+                        currentClient.connectWebSocket { message -> handleServerMessage(message) }
                     } catch (e: Exception) {
                         _error.value = "WebSocket error: ${e.message}"
                     }
                 }
 
                 kotlinx.coroutines.withTimeout(5000L) {
-                    client.connected.first { it }
+                    currentClient.connected.first { it }
                 }
                 _isConnecting.value = false
                 action()
@@ -94,10 +111,15 @@ class BiteSyncViewModel(
     }
 
     private fun sendMessage(message: ClientMessage) {
-        if (client.connected.value) {
-            viewModelScope.launch { client.send(message) }
+        val currentClient = client
+        if (currentClient == null) {
+            _error.value = "Searching for server..."
+            return
+        }
+        if (currentClient.connected.value) {
+            viewModelScope.launch { currentClient.send(message) }
         } else {
-            connectAndExecute { client.send(message) }
+            connectAndExecute { currentClient.send(message) }
         }
     }
 
@@ -124,12 +146,17 @@ class BiteSyncViewModel(
             return
         }
         searchJob = viewModelScope.launch {
+            val currentClient = client
+            if (currentClient == null) {
+                _error.value = "Searching for server..."
+                return@launch
+            }
             delay(300) // debounce
             _isSearching.value = true
             try {
                 // Try to get user location first
                 val location = locationTracker?.getCurrentLocation()
-                _predictions.value = client.autocomplete(
+                _predictions.value = currentClient.autocomplete(
                     query = query,
                     lat = location?.first,
                     lng = location?.second
@@ -145,11 +172,13 @@ class BiteSyncViewModel(
     }
 
     fun onPredictionSelected(prediction: PlacePrediction) {
+        val currentClient = client
+        if (currentClient == null) return
         _predictions.value = emptyList()
         viewModelScope.launch {
             try {
-                val venue = client.getPlaceDetails(prediction.placeId)
-                client.send(ClientMessage.SubmitVenue(venue))
+                val venue = currentClient.getPlaceDetails(prediction.placeId)
+                currentClient.send(ClientMessage.SubmitVenue(venue))
             } catch (e: Exception) {
                 _error.value = "Could not load place details: ${e.message}"
             }
@@ -163,8 +192,10 @@ class BiteSyncViewModel(
     // ======== Swipe actions ========
 
     fun onSwipe(venueId: String, liked: Boolean) {
+        val currentClient = client
+        if (currentClient == null) return
         viewModelScope.launch {
-            client.send(ClientMessage.Swipe(venueId, liked))
+            currentClient.send(ClientMessage.Swipe(venueId, liked))
         }
         _currentCardIndex.value++
     }
@@ -232,7 +263,8 @@ class BiteSyncViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        client.close()
+        serverDiscovery.stopDiscovery()
+        client?.close()
     }
 
     companion object {

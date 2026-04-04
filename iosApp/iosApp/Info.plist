@@ -11,5 +11,7 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>BiteSync uses your location to find nearby restaurants.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>BiteSync uses the local network to discover other devices in the same room.</string>
 </dict>
 </plist>
