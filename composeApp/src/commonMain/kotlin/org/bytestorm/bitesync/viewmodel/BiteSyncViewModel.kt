@@ -295,7 +295,7 @@ class BiteSyncViewModel(
     // ======== Server message handler ========
 
     private fun handleServerMessage(message: ServerMessage) {
-        if (_screen.value is AppScreen.Lobby && message !is ServerMessage.RoomCreated && message !is ServerMessage.RoomJoined && message !is ServerMessage.Error) {
+        if (_myUserId.value == null && message !is ServerMessage.RoomCreated && message !is ServerMessage.RoomJoined && message !is ServerMessage.Error) {
             return
         }
 
@@ -311,7 +311,6 @@ class BiteSyncViewModel(
             }
 
             is ServerMessage.RoomUpdate -> {
-                if (_myUserId.value == null) return
                 _roomState.value = message.roomState
                 when (message.roomState.status) {
                     RoomStatus.SUGGESTING -> {
