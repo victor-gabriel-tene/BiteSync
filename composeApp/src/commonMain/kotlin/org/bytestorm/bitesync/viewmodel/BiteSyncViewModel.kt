@@ -123,8 +123,8 @@ class BiteSyncViewModel(
                 viewModelScope.launch {
                     try {
                         currentClient.connectWebSocket { message -> handleServerMessage(message) }
-                    } catch (e: Exception) {
-                        _error.value = "WebSocket error: ${e.message}"
+                    } catch (_: Exception) {
+                        _error.value = "Connection lost. Try again."
                     }
                 }
 
@@ -133,11 +133,11 @@ class BiteSyncViewModel(
                 }
                 _isConnecting.value = false
                 action()
-            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            } catch (_: kotlinx.coroutines.TimeoutCancellationException) {
                 _error.value = "Connection timeout. Is the server running?"
                 _isConnecting.value = false
-            } catch (e: Exception) {
-                _error.value = "Connection failed: ${e.message}"
+            } catch (_: Exception) {
+                _error.value = "Connection failed. Try again."
                 _isConnecting.value = false
             }
         }
@@ -267,6 +267,8 @@ class BiteSyncViewModel(
     }
 
     fun returnToLobby() {
+        client?.close()
+        client = null
         _screen.value = AppScreen.Lobby
         _roomState.value = null
         _myUserId.value = null
@@ -279,11 +281,24 @@ class BiteSyncViewModel(
         _doneSent = false
         _myAttendanceVote.value = null
         _attendanceResponded.value = 0
+
+        viewModelScope.launch {
+            serverDiscovery.discoveredServerUrl.collect { url ->
+                if (url != null && client == null) {
+                    client = BiteSyncClient(url)
+                    return@collect
+                }
+            }
+        }
     }
 
     // ======== Server message handler ========
 
     private fun handleServerMessage(message: ServerMessage) {
+        if (_screen.value is AppScreen.Lobby && message !is ServerMessage.RoomCreated && message !is ServerMessage.RoomJoined && message !is ServerMessage.Error) {
+            return
+        }
+
         when (message) {
             is ServerMessage.RoomCreated -> {
                 _roomState.value = message.roomState
@@ -296,6 +311,7 @@ class BiteSyncViewModel(
             }
 
             is ServerMessage.RoomUpdate -> {
+                if (_myUserId.value == null) return
                 _roomState.value = message.roomState
                 when (message.roomState.status) {
                     RoomStatus.SUGGESTING -> {
